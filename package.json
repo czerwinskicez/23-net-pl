@@ -9,15 +9,21 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "14.2.7",
-    "react": "^18",
-    "react-dom": "^18"
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@fontsource/ubuntu": "^5.1.0",
+    "@mui/icons-material": "^6.0.1",
+    "@mui/material": "^6.0.1",
+    "firebase": "^10.13.1",
+    "next": "^14.2.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@babel/preset-env": "^7.25.4",
     "@babel/preset-react": "^7.24.7",
     "eslint": "^8",
-    "eslint-config-next": "^14.2.7"
+    "eslint-config-next": "^14.2.13"
   }
 }
