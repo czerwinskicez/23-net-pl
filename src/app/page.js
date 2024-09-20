@@ -4,18 +4,21 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Box, Button, TextField, Typography, Dialog, DialogActions, DialogContent, DialogTitle, Alert } from '@mui/material';
 import { useRouter } from 'next/navigation';
-import { auth,
+import {
+  auth,
   provider,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   onAuthStateChanged,
-  signInWithPopup } from '../firebaseConfig';
+  signInWithPopup
+} from '../firebaseConfig';
 import MyAppBar from '../components/AppBar';
 
 // import { useTheme } from '@mui/material/styles';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from './theme';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import BodyBox from '../components/BodyBox';
 
 export default function Home() {
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
@@ -27,6 +30,16 @@ export default function Home() {
   const [error, setError] = useState('');
   const [open, setOpen] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        router.push('/start');
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -50,7 +63,7 @@ export default function Home() {
         console.error(error);
       });
   };
-  
+
   const handlePasswordLogin = () => {
     if (!validateEmail(email)) {
       setError('Invalid email address.');
@@ -71,7 +84,7 @@ export default function Home() {
         setError(error.message);
       });
   };
-  
+
   // Function to call the Cloud Function
   const storeUserInfo = (user) => {
     const userDoc = {
@@ -81,7 +94,7 @@ export default function Home() {
       photoURL: user.photoURL,
       createdAt: new Date(),
     };
-  
+
     return fetch('/storeUserInfo', {
       method: 'POST',
       headers: {
@@ -90,7 +103,7 @@ export default function Home() {
       body: JSON.stringify(userDoc),
     });
   };
-  
+
 
   const handleRegister = () => {
     if (!validateEmail(email)) {
@@ -133,30 +146,30 @@ export default function Home() {
     <ThemeProvider theme={theme}>
       <Container maxWidth={isLargeScreen ? 'md' : 'sm'}>
         <MyAppBar />
-        <Box
-  display="flex"
-  flexDirection="column"
-  alignItems="center"
-  height="100vh"
-  textAlign="center"
-  sx={{ backgroundColor: theme.palette.background.default }}
->
-  <img src="/logo.png" alt="23net logo" style={{ marginBottom: '16px' }} />
-  <Typography variant="h4" gutterBottom>
-    Welcome to 23.net.pl Forum
-  </Typography>
-  <Box display="flex" flexDirection="column" width="100%" maxWidth="300px">
-    <Button variant="contained" color="primary" sx={{ mb: 2 }} onClick={handleSSOLogin}>
-      Login with SSO
-    </Button>
-    <Button variant="outlined" color="primary" sx={{ mb: 2 }} onClick={() => handleClickOpen(false)}>
-      Login with Password
-    </Button>
-    <Button variant="text" color="primary" onClick={() => handleClickOpen(true)}>
-      Register with Password
-    </Button>
-  </Box>
-</Box>
+        <BodyBox
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          height="100vh"
+          textAlign="center"
+          sx={{ backgroundColor: theme.palette.background.default }}
+        >
+          <img src="/logo.png" alt="23net logo" style={{ marginBottom: '16px' }} />
+          <Typography variant="h4" gutterBottom>
+            Welcome to 23.net.pl Forum
+          </Typography>
+          <Box display="flex" flexDirection="column" width="100%" maxWidth="300px">
+            <Button variant="contained" color="primary" sx={{ mb: 2 }} onClick={handleSSOLogin}>
+              Login with SSO
+            </Button>
+            <Button variant="outlined" color="primary" sx={{ mb: 2 }} onClick={() => handleClickOpen(false)}>
+              Login with Password
+            </Button>
+            <Button variant="text" color="primary" onClick={() => handleClickOpen(true)}>
+              Register with Password
+            </Button>
+          </Box>
+        </BodyBox>
 
 
 

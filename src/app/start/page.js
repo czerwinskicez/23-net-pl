@@ -10,6 +10,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../theme'; // Import the theme
 import ForumList from '../../components/ForumList'; // Import the ForumList component
+import BodyBox from '../../components/BodyBox';
 
 export default function Start() {
   const router = useRouter();
@@ -30,17 +31,9 @@ export default function Start() {
     <ThemeProvider theme={theme}> {/* Wrap with ThemeProvider */}
       <Container maxWidth={isLargeScreen ? 'md' : 'sm'}>
         <MyAppBar />
-        <Box
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
-          height="100vh"
-          textAlign="center"
-          sx={{ backgroundColor: theme.palette.background.default }}
-        >
+        <BodyBox>
           <ForumList /> {/* Use the ForumList component */}
-        </Box>
+        </BodyBox>
       </Container>
     </ThemeProvider>
   );
