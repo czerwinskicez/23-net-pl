@@ -83,6 +83,8 @@ const CreateThreadDialog = ({ open, handleClose, fetchThreads, forum }) => {
           margin="dense"
           label="Description"
           fullWidth
+          multiline
+          rows="4"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />

@@ -192,6 +192,8 @@ const ForumPage = ({ params }) => {
                       margin="dense"
                       label="Description"
                       fullWidth
+                      multiline
+                      rows="4"
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                     />

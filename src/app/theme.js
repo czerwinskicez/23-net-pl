@@ -22,6 +22,16 @@ const theme = createTheme({
       color: 'rgba(0, 0, 0, 0.87)',
     }
   },
+  components: {
+    MuiContainer: {
+      styleOverrides: {
+        root: {
+          paddingLeft: 0,
+          paddingRight: 0,
+        },
+      },
+    },
+  },
 });
 
 export default theme;
