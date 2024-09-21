@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, Alert } from '@mui/material';
 import { collection, doc, setDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
@@ -9,20 +9,32 @@ const CreateForumAdmin = ({ forums, onForumAdded, setAlertMessage, setAlertSever
   const [newForumDescription, setNewForumDescription] = useState('');
   const [newForumPathname, setNewForumPathname] = useState('');
   const [error, setError] = useState('');
+  const [isPathnameEdited, setIsPathnameEdited] = useState(false);
+
+  useEffect(() => {
+    if (!isPathnameEdited) {
+      const generatedPathname = newForumName
+        .toLowerCase()
+        .replace(/[^a-z0-9-_]/g, '-') // Replace invalid characters with hyphens
+        .replace(/-+/g, '-') // Replace multiple hyphens with a single hyphen
+        .replace(/^-|-$/g, ''); // Remove leading and trailing hyphens
+      setNewForumPathname(generatedPathname);
+    }
+  }, [newForumName, isPathnameEdited]);
 
   const handleAddForum = async () => {
     const pathnameRegex = /^[a-z0-9-_]+$/;
-  
+
     if (!newForumName || !newForumDescription || !newForumPathname) {
       setError('All fields are required.');
       return;
     }
-  
+
     if (!pathnameRegex.test(newForumPathname)) {
       setError('Pathname can only contain lowercase letters, numbers, hyphens, and underscores.');
       return;
     }
-  
+
     try {
       const forumDocRef = doc(db, 'forums', newForumPathname);
       await setDoc(forumDocRef, {
@@ -31,16 +43,17 @@ const CreateForumAdmin = ({ forums, onForumAdded, setAlertMessage, setAlertSever
         pathname: newForumPathname,
         orderIdx: forums ? forums.length : 0
       });
-  
+
       setNewForumName('');
       setNewForumDescription('');
       setNewForumPathname('');
       setError('');
-  
+      setIsPathnameEdited(false);
+
       onForumAdded(); // Call the function to fetch forums
       setAlertMessage('Forum added successfully!');
       setAlertSeverity('success');
-  
+
       // Refresh the page
       window.location.reload();
     } catch (error) {
@@ -50,7 +63,11 @@ const CreateForumAdmin = ({ forums, onForumAdded, setAlertMessage, setAlertSever
       console.error('Error adding forum:', error);
     }
   };
-  
+
+  const handlePathnameChange = (e) => {
+    setNewForumPathname(e.target.value);
+    setIsPathnameEdited(true);
+  };
 
   return (
     <Box sx={{ marginBottom: theme.spacing(2), width: '90%' }}>
@@ -65,7 +82,7 @@ const CreateForumAdmin = ({ forums, onForumAdded, setAlertMessage, setAlertSever
       <TextField
         label="Pathname"
         value={newForumPathname}
-        onChange={(e) => setNewForumPathname(e.target.value)}
+        onChange={handlePathnameChange}
         fullWidth
         sx={{ marginBottom: theme.spacing(1) }}
       />

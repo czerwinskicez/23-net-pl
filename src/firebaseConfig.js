@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { getFirestore, doc, getDoc, getDocs } from 'firebase/firestore'; // Import Firestore
+import { getFirestore, doc, getDoc, getDocs, updateDoc, serverTimestamp, collection, writeBatch } from 'firebase/firestore'; // Import Firestore
 
 const firebaseConfig = {
   apiKey: "AIzaSyDzqu9SzaFROpXB6bzjF6CNUurVUXcKZaA",
@@ -17,4 +17,4 @@ const auth = getAuth(app);
 const db = getFirestore(app); // Initialize Firestore
 const provider = new GoogleAuthProvider();
 
-export { getFirestore, doc, getDoc, getDocs, auth, provider, signInWithRedirect, signInWithPopup, getRedirectResult, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, db }; // Export Firestore
+export { getFirestore, updateDoc, serverTimestamp, collection, writeBatch, doc, getDoc, getDocs, auth, provider, signInWithRedirect, signInWithPopup, getRedirectResult, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, db }; // Export Firestore

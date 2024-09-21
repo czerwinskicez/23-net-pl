@@ -63,8 +63,11 @@ const ThreadPage = ({ params }) => {
           ) : (
             threadData && (
               <>
-                <Typography variant="h4">{threadData.title}</Typography>
-                <Typography variant="body1">{threadData.description}</Typography>
+                <Paper style={{ width: '90%', marginBottom: "16px", padding: "16px" }}>
+                  <Typography variant="h4">{threadData.title}</Typography>
+                  <Typography variant="body1">{threadData.description}</Typography>
+                  
+                </Paper>
                 <Paper style={{ width: '90%' }}>
                   <PostsList forum={forum} threadId={threadId} posts={posts} fetchPosts={fetchPosts} />
                 </Paper>

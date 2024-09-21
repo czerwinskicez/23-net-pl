@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Container, ThemeProvider, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Alert, IconButton } from '@mui/material';
+import { Box, Container, ThemeProvider, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Alert, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { auth, db, onAuthStateChanged } from '../../../firebaseConfig';
 import { doc, getDoc, collection, addDoc, query, getDocs, orderBy, deleteDoc, runTransaction } from 'firebase/firestore';
@@ -30,7 +30,7 @@ const ForumPage = ({ params }) => {
       if (!user) {
         router.push('/');
       } else {
-        const userDocRef = doc(db, 'users', user.uid);
+        const userDocRef = doc(db, 'public_users', user.uid);
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists() && userDoc.data().admin) {
           setIsAdmin(true);
@@ -86,7 +86,7 @@ const ForumPage = ({ params }) => {
   };
 
   const generateUUID = () => {
-    return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
       const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16).toUpperCase();
     });
@@ -99,7 +99,7 @@ const ForumPage = ({ params }) => {
     }
 
     try {
-      const userDocRef = doc(db, 'users', auth.currentUser.uid);
+      const userDocRef = doc(db, 'public_users', auth.currentUser.uid);
       const userDoc = await getDoc(userDocRef);
       const displayName = userDoc.exists() ? userDoc.data().displayName : auth.currentUser.email;
 
@@ -169,9 +169,12 @@ const ForumPage = ({ params }) => {
               <>
                 <Typography variant="h4">{forumData.name}</Typography>
                 <Typography variant="body1">{forumData.description}</Typography>
-                <Button variant="contained" color="primary" onClick={handleClickOpen}>
-                  Create Thread
-                </Button>
+
+                <Box display="flex" justifyContent="flex-end" sx={{ width: "90%", marginBottom: "10px" }}>
+                  <Button variant="contained" color="primary" onClick={handleClickOpen}>
+                    Create Thread
+                  </Button>
+                </Box>
                 <Dialog open={open} onClose={handleClose}>
                   <DialogTitle>Create a new thread</DialogTitle>
                   <DialogContent>
@@ -202,7 +205,7 @@ const ForumPage = ({ params }) => {
                     </Button>
                   </DialogActions>
                 </Dialog>
-                <TableContainer component={Paper}>
+                <TableContainer component={Paper} style={{ width: "90%" }}>
                   <Table>
                     <TableHead>
                       <TableRow>
@@ -215,7 +218,12 @@ const ForumPage = ({ params }) => {
                     </TableHead>
                     <TableBody>
                       {threads.map((thread) => (
-                        <TableRow key={thread.id} onClick={() => handleRowClick(thread.id)} style={{ cursor: 'pointer' }}>
+                        <TableRow key={thread.id} onClick={() => handleRowClick(thread.id)} style={{ cursor: 'pointer', transition: "0.23s" }}
+                          hover sx={{
+                            '&:hover': {
+                              backgroundColor: 'rgba(0,0,0,0.8)'
+                            }
+                          }}>
                           <TableCell>{thread.title}</TableCell>
                           <TableCell>{thread.creator}</TableCell>
                           <TableCell>{new Date(thread.createdAt.seconds * 1000).toLocaleString()}</TableCell>

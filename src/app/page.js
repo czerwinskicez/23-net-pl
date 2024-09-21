@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Container, Box, Button, TextField, Typography, Dialog, DialogActions, DialogContent, DialogTitle, Alert } from '@mui/material';
+import { Paper, Container, Box, Button, TextField, Typography, Dialog, DialogActions, DialogContent, DialogTitle, Alert } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import {
   auth,
@@ -19,6 +19,7 @@ import { ThemeProvider } from '@mui/material/styles';
 import theme from './theme';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import BodyBox from '../components/BodyBox';
+import ForumDescription from '@/components/ForumDescription';
 
 export default function Home() {
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
@@ -169,6 +170,7 @@ export default function Home() {
               Register with Password
             </Button>
           </Box>
+          <ForumDescription/>
         </BodyBox>
 
 

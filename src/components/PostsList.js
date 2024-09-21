@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { List, ListItem, ListItemText, Divider, Menu, MenuItem, IconButton, Typography, Snackbar } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { db, auth, getDoc } from '../firebaseConfig';
-import { collection, getDocs, orderBy, query, deleteDoc, doc } from 'firebase/firestore';
+import { db, auth, getDoc, doc } from '../firebaseConfig';
+import { deleteDoc } from 'firebase/firestore';
 
 const PostsList = ({ forum, threadId, posts, fetchPosts }) => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -13,7 +13,7 @@ const PostsList = ({ forum, threadId, posts, fetchPosts }) => {
 
   useEffect(() => {
     const checkAdminStatus = async () => {
-      const userDoc = await getDoc(doc(db, `users/${auth.currentUser.uid}`));
+      const userDoc = await getDoc(doc(db, `public_users/${auth.currentUser.uid}`));
       if (userDoc.exists() && userDoc.data().admin) {
         setIsAdmin(true);
       }
@@ -29,7 +29,7 @@ const PostsList = ({ forum, threadId, posts, fetchPosts }) => {
       const userNamesTemp = {};
 
       for (const userId of uniqueUserIds) {
-        const userDoc = await getDoc(doc(db, `users/${userId}`));
+        const userDoc = await getDoc(doc(db, `public_users/${userId}`));
         if (userDoc.exists()) {
           userNamesTemp[userId] = userDoc.data().displayName;
         }
@@ -79,13 +79,13 @@ const PostsList = ({ forum, threadId, posts, fetchPosts }) => {
   return (
     <>
       <List>
-        {posts.map((post) => (
+        {posts.slice(1).map((post) => (
           <React.Fragment key={post.id}>
             <ListItem alignItems="flex-start" id={post.id}>
               <ListItemText
                 primary={post.description}
                 secondary={
-                  <div style={{marginTop: "8px"}}>
+                  <span style={{ marginTop: "8px", display: "block" }}>
                     <Typography
                       component="span"
                       variant="body2"
@@ -102,7 +102,7 @@ const PostsList = ({ forum, threadId, posts, fetchPosts }) => {
                     >
                       {new Date(post.createdAt.seconds * 1000).toLocaleString()}
                     </Typography>
-                  </div>
+                  </span>
                 }
               />
               <IconButton onClick={(event) => handleMenuOpen(event, post.id)}>
