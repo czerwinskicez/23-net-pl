@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Container, ThemeProvider, Typography, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Alert, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { auth, db, onAuthStateChanged } from '../../../firebaseConfig';
-import { doc, getDoc, collection, addDoc, query, getDocs, orderBy, deleteDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, addDoc, query, getDocs, orderBy, deleteDoc, runTransaction } from 'firebase/firestore';
 import MyAppBar from '../../../components/AppBar';
 import BodyBox from '../../../components/BodyBox';
 import theme from '../../theme';
@@ -20,7 +20,7 @@ const ForumPage = ({ params }) => {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [posts, setPosts] = useState([]);
+  const [threads, setThreads] = useState([]);
   const [dialogError, setDialogError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
@@ -60,19 +60,19 @@ const ForumPage = ({ params }) => {
     fetchForumData();
   }, [forum]);
 
-  const fetchPosts = async () => {
+  const fetchThreads = async () => {
     try {
-      const postsQuery = query(collection(db, `forums/${forum}/posts`), orderBy('lastPostTimestamp', 'desc'));
-      const postsSnapshot = await getDocs(postsQuery);
-      const postsList = postsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setPosts(postsList);
+      const threadsQuery = query(collection(db, `forums/${forum}/threads`), orderBy('lastPostTimestamp', 'desc'));
+      const threadsSnapshot = await getDocs(threadsQuery);
+      const threadsList = threadsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setThreads(threadsList);
     } catch (error) {
-      console.error('Error fetching posts:', error);
+      console.error('Error fetching threads:', error);
     }
   };
 
   useEffect(() => {
-    fetchPosts();
+    fetchThreads();
   }, [forum]);
 
   const handleClickOpen = () => {
@@ -103,23 +103,37 @@ const ForumPage = ({ params }) => {
       const userDoc = await getDoc(userDocRef);
       const displayName = userDoc.exists() ? userDoc.data().displayName : auth.currentUser.email;
 
-      const newThread = {
-        title,
-        description,
-        createdAt: new Date(),
-        lastPostTimestamp: new Date(),
-        creator: displayName,
-        creatorUid: auth.currentUser.uid,
-        uuid: generateUUID(),
-      };
-      await addDoc(collection(db, `forums/${forum}/posts`), newThread);
+      await runTransaction(db, async (transaction) => {
+        const threadRef = doc(collection(db, `forums/${forum}/threads`));
+        const newThread = {
+          title,
+          description,
+          createdAt: new Date(),
+          lastPostTimestamp: new Date(),
+          creator: displayName,
+          creatorUid: auth.currentUser.uid,
+          uuid: generateUUID(),
+        };
+        transaction.set(threadRef, newThread);
+
+        const firstPostRef = doc(collection(threadRef, 'posts'));
+        const firstPost = {
+          title,
+          description,
+          createdAt: new Date(),
+          creator: displayName,
+          creatorUid: auth.currentUser.uid,
+        };
+        transaction.set(firstPostRef, firstPost);
+      });
+
       setSuccessMessage('Thread created successfully!');
       setTimeout(() => {
         setOpen(false);
         setTitle('');
         setDescription('');
         setSuccessMessage('');
-        fetchPosts(); // Refresh the posts list
+        fetchThreads(); // Refresh the threads list
         router.refresh(); // Refresh the page after 5 seconds
       }, 5000);
     } catch (error) {
@@ -128,17 +142,17 @@ const ForumPage = ({ params }) => {
     }
   };
 
-  const handleDeleteThread = async (postId) => {
+  const handleDeleteThread = async (threadId) => {
     try {
-      await deleteDoc(doc(db, `forums/${forum}/posts`, postId));
-      fetchPosts(); // Refresh the posts list
+      await deleteDoc(doc(db, `forums/${forum}/threads`, threadId));
+      fetchThreads(); // Refresh the threads list
     } catch (error) {
       console.error('Error deleting thread:', error);
     }
   };
 
-  const handleRowClick = (postId) => {
-    router.push(`/forum/${forum}/${postId}`);
+  const handleRowClick = (threadId) => {
+    router.push(`/forum/${forum}/${threadId}`);
   };
 
   return (
@@ -200,15 +214,15 @@ const ForumPage = ({ params }) => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {posts.map((post) => (
-                        <TableRow key={post.id} onClick={() => handleRowClick(post.id)} style={{ cursor: 'pointer' }}>
-                          <TableCell>{post.title}</TableCell>
-                          <TableCell>{post.creator}</TableCell>
-                          <TableCell>{new Date(post.createdAt.seconds * 1000).toLocaleString()}</TableCell>
-                          <TableCell>{new Date(post.lastPostTimestamp.seconds * 1000).toLocaleString()}</TableCell>
+                      {threads.map((thread) => (
+                        <TableRow key={thread.id} onClick={() => handleRowClick(thread.id)} style={{ cursor: 'pointer' }}>
+                          <TableCell>{thread.title}</TableCell>
+                          <TableCell>{thread.creator}</TableCell>
+                          <TableCell>{new Date(thread.createdAt.seconds * 1000).toLocaleString()}</TableCell>
+                          <TableCell>{new Date(thread.lastPostTimestamp.seconds * 1000).toLocaleString()}</TableCell>
                           {isAdmin && (
                             <TableCell>
-                              <IconButton onClick={(e) => { e.stopPropagation(); handleDeleteThread(post.id); }} color="secondary">
+                              <IconButton onClick={(e) => { e.stopPropagation(); handleDeleteThread(thread.id); }} color="secondary">
                                 <DeleteIcon />
                               </IconButton>
                             </TableCell>
