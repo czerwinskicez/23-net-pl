@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { List, ListItem, ListItemText, Divider, Menu, MenuItem, IconButton, Typography, Snackbar } from '@mui/material';
+import { List, ListItem, ListItemText, Divider, Menu, MenuItem, IconButton, Typography, Snackbar, Paper } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { db, auth, getDoc, doc } from '../firebaseConfig';
 import { deleteDoc } from 'firebase/firestore';
@@ -78,49 +78,55 @@ const PostsList = ({ forum, threadId, posts, fetchPosts }) => {
 
   return (
     <>
-      <List>
-        {posts.slice(1).map((post) => (
-          <React.Fragment key={post.id}>
-            <ListItem alignItems="flex-start" id={post.id}>
-              <ListItemText
-                primary={post.description}
-                secondary={
-                  <span style={{ marginTop: "8px", display: "block" }}>
-                    <Typography
-                      component="span"
-                      variant="body2"
-                      color="textPrimary"
-                      style={{ display: 'inline', marginRight: "10px" }}
-                    >
-                      {userNames[post.creatorId] || 'Unknown User'}
-                    </Typography>
-                    <Typography
-                      component="span"
-                      variant="body2"
-                      color="textSecondary"
-                      style={{ display: 'inline' }}
-                    >
-                      {new Date(post.createdAt.seconds * 1000).toLocaleString()}
-                    </Typography>
-                  </span>
-                }
-              />
-              <IconButton onClick={(event) => handleMenuOpen(event, post.id)}>
-                <MoreVertIcon />
-              </IconButton>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-              >
-                <MenuItem onClick={handleCopyLink}>Copy Link</MenuItem>
-                {isAdmin && <MenuItem onClick={handleDeletePost}>Delete Post</MenuItem>}
-              </Menu>
-            </ListItem>
-            <Divider component="li" />
-          </React.Fragment>
-        ))}
-      </List>
+      <Paper style={{ width: '90%', padding: '16px', marginBottom: '16px' }}>
+        {posts.length > 0 ? (
+          <List>
+            {posts.map((post) => (
+              <React.Fragment key={post.id}>
+                <ListItem alignItems="flex-start" id={post.id}>
+                  <ListItemText
+                    primary={post.description}
+                    secondary={
+                      <span style={{ marginTop: '8px', display: 'block' }}>
+                        <Typography
+                          component="span"
+                          variant="body2"
+                          color="textPrimary"
+                          style={{ display: 'inline', marginRight: '10px' }}
+                        >
+                          {userNames[post.creatorId] || 'Unknown User'}
+                        </Typography>
+                        <Typography
+                          component="span"
+                          variant="body2"
+                          color="textSecondary"
+                          style={{ display: 'inline' }}
+                        >
+                          {new Date(post.createdAt.seconds * 1000).toLocaleString()}
+                        </Typography>
+                      </span>
+                    }
+                  />
+                  <IconButton onClick={(event) => handleMenuOpen(event, post.id)}>
+                    <MoreVertIcon />
+                  </IconButton>
+                  <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl)}
+                    onClose={handleMenuClose}
+                  >
+                    <MenuItem onClick={handleCopyLink}>Copy Link</MenuItem>
+                    {isAdmin && <MenuItem onClick={handleDeletePost}>Delete Post</MenuItem>}
+                  </Menu>
+                </ListItem>
+                <Divider component="li" />
+              </React.Fragment>
+            ))}
+          </List>
+        ) : (
+          <Typography variant="body1">There are no posts yet.</Typography>
+        )}
+      </Paper>
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={3000}

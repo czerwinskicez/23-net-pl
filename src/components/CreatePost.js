@@ -9,6 +9,7 @@ const CreatePost = ({ forum, threadId, fetchPosts }) => {
   const [errorMessage, setErrorMessage] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -32,6 +33,8 @@ const CreatePost = ({ forum, threadId, fetchPosts }) => {
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
       const newPost = {
         creatorId: auth.currentUser.uid,
@@ -39,11 +42,11 @@ const CreatePost = ({ forum, threadId, fetchPosts }) => {
         createdAt: serverTimestamp(),
       };
       await addDoc(collection(db, `forums/${forum}/threads/${threadId}/posts`), newPost);
-      setNewPostContent('');
-      fetchPosts(); // Refresh the posts list
+      window.location.reload(); // Refresh the page immediately after adding the post
     } catch (error) {
       setErrorMessage('Error adding post.');
       console.error('Error adding post:', error);
+      setIsSubmitting(false);
     }
   };
 
@@ -75,13 +78,13 @@ const CreatePost = ({ forum, threadId, fetchPosts }) => {
           value={newPostContent}
           onChange={(e) => setNewPostContent(e.target.value)}
           style={{ marginBottom: '16px' }}
-          disabled={!displayName}
+          disabled={!displayName || isSubmitting}
         />
         <Button
           variant="contained"
           color="primary"
           onClick={handleAddPost}
-          disabled={!displayName}
+          disabled={!displayName || isSubmitting}
         >
           Add Post
         </Button>

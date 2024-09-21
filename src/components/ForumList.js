@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, List, ListItem, ListItemText } from '@mui/material';
+import { Box, Typography, List, ListItem, ListItemText, Badge } from '@mui/material';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebaseConfig'; // Make sure to import your Firestore config
 import { useTheme } from '@mui/material/styles'; // Import useTheme
@@ -15,7 +15,12 @@ const ForumList = () => {
       try {
         const forumsCollection = collection(db, 'forums');
         const forumsSnapshot = await getDocs(forumsCollection);
-        const forumsList = forumsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const forumsList = await Promise.all(forumsSnapshot.docs.map(async (doc) => {
+          const forumData = doc.data();
+          const threadsCollection = collection(db, `forums/${doc.id}/threads`);
+          const threadsSnapshot = await getDocs(threadsCollection);
+          return { id: doc.id, ...forumData, threadCount: threadsSnapshot.size };
+        }));
         
         // Sort forums by orderIdx
         forumsList.sort((a, b) => a.orderIdx - b.orderIdx);
@@ -49,7 +54,8 @@ const ForumList = () => {
               marginBottom: theme.spacing(1), 
               borderRadius: theme.shape.borderRadius, 
               textDecoration: 'none', // Remove underline from links
-              cursor: 'pointer' // Set cursor to pointer
+              cursor: 'pointer', // Set cursor to pointer
+              position: 'relative' // Ensure the badge is positioned correctly
             }}
           >
             <ListItemText 
@@ -57,6 +63,17 @@ const ForumList = () => {
               secondary={forum.description} 
               sx={{ color: theme.palette.primary.main }} 
             />
+<Badge 
+  badgeContent={forum.threadCount} 
+  sx={{ 
+    position: 'absolute', 
+    top: theme.spacing(2), 
+    right: theme.spacing(2), 
+    backgroundColor: 'transparent', 
+    color: theme.palette.primary.main, 
+  }} 
+/>
+
           </ListItem>
         ))}
       </List>

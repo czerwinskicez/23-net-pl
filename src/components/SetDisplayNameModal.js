@@ -7,12 +7,15 @@ const SetDisplayNameModal = ({ isOpen, onClose, onSuccess }) => {
   const [displayName, setDisplayName] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSaveDisplayName = async () => {
     if (displayName.trim() === '') {
       setErrorMessage('Display name cannot be empty.');
       return;
     }
+
+    setIsSubmitting(true);
 
     try {
       const publicUserRef = doc(db, `public_users/${auth.currentUser.uid}`);
@@ -27,11 +30,15 @@ const SetDisplayNameModal = ({ isOpen, onClose, onSuccess }) => {
 
       setSuccessMessage('Display name updated successfully.');
       setErrorMessage('');
+      setTimeout(() => {
+        window.location.reload(); // Refresh the page after 1 second
+      }, 1000);
       onSuccess(displayName);
     } catch (error) {
       setErrorMessage('Error saving display name.');
       setSuccessMessage('');
       console.error('Error saving display name:', error);
+      setIsSubmitting(false);
     }
   };
 
@@ -64,9 +71,15 @@ const SetDisplayNameModal = ({ isOpen, onClose, onSuccess }) => {
           onChange={(e) => setDisplayName(e.target.value)}
           onKeyPress={handleKeyPress}
           style={{ marginBottom: '16px' }}
+          disabled={isSubmitting}
         />
         <Box display="flex" justifyContent="flex-end">
-          <Button variant="contained" color="primary" onClick={handleSaveDisplayName}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSaveDisplayName}
+            disabled={isSubmitting}
+          >
             Save
           </Button>
         </Box>

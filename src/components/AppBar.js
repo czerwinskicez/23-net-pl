@@ -87,7 +87,7 @@ export default function MyAppBar() {
             sx={{ flexGrow: 1, color: 'white', cursor: 'pointer' }}
             onClick={handleTitleClick}
           >
-            23.net.pl Forum
+            23.net.pl
           </Typography>
           {userEmail && (
             <div style={{ display: 'flex', alignItems: 'center' }}>
