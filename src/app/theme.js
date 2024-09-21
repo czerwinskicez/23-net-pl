@@ -18,24 +18,9 @@ const theme = createTheme({
   },
   typography: {
     fontFamily: 'Ubuntu, Arial, sans-serif',
-    h1: {
+    allVariants: {
       color: 'rgba(0, 0, 0, 0.87)',
-    },
-    h2: {
-      color: 'rgba(0, 0, 0, 0.87)',
-    },
-    h3: {
-      color: 'rgba(0, 0, 0, 0.87)',
-    },
-    h4: {
-      color: 'rgba(0, 0, 0, 0.87)',
-    },
-    h5: {
-      color: 'rgba(0, 0, 0, 0.87)',
-    },
-    h6: {
-      color: 'rgba(0, 0, 0, 0.87)',
-    },
+    }
   },
 });
 

@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Container, ThemeProvider, Typography, CircularProgress } from '@mui/material';
+import { Container, ThemeProvider, Typography, CircularProgress, Button, TextField, Box, Avatar, List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
 import { auth, db, onAuthStateChanged } from '../../../../firebaseConfig';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, addDoc, collection, query, orderBy, getDocs, serverTimestamp } from 'firebase/firestore';
 import MyAppBar from '../../../../components/AppBar';
 import BodyBox from '../../../../components/BodyBox';
 import theme from '../../../theme';
@@ -17,6 +17,9 @@ const PostPage = ({ params }) => {
   const [postData, setPostData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [newPostContent, setNewPostContent] = useState('');
+  const [creatingPost, setCreatingPost] = useState(false);
+  const [posts, setPosts] = useState([]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -48,6 +51,42 @@ const PostPage = ({ params }) => {
 
     fetchPostData();
   }, [forum, post]);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const postsQuery = query(collection(db, `forums/${forum}/posts`), orderBy('createdAt', 'asc'));
+        const querySnapshot = await getDocs(postsQuery);
+        const postsList = await Promise.all(querySnapshot.docs.map(async (docSnapshot) => {
+          const postData = docSnapshot.data();
+          const userDoc = await getDoc(doc(db, `users/${postData.creator}`));
+          const userPhotoURL = userDoc.exists() ? userDoc.data().photoURL : null;
+          return { id: docSnapshot.id, ...postData, userPhotoURL };
+        }));
+        setPosts(postsList);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      }
+    };
+
+    fetchPosts();
+  }, [forum]);
+
+  const handleCreatePost = async () => {
+    setCreatingPost(true);
+    try {
+      await addDoc(collection(db, `forums/${forum}/posts`), {
+        content: newPostContent,
+        createdAt: serverTimestamp(),
+        creator: auth.currentUser.uid,
+      });
+      setNewPostContent('');
+    } catch (error) {
+      console.error('Error creating post:', error);
+    } finally {
+      setCreatingPost(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -94,6 +133,39 @@ const PostPage = ({ params }) => {
               </Typography>
             </>
           )}
+          <List>
+            {posts.map((post) => (
+              <ListItem key={post.id} alignItems="flex-start">
+                <ListItemAvatar>
+                  <Avatar src={post.userPhotoURL} />
+                </ListItemAvatar>
+                <ListItemText
+                  primary={post.content}
+                  secondary={`Created by: ${post.creator} on ${new Date(post.createdAt.seconds * 1000).toLocaleString()}`}
+                />
+              </ListItem>
+            ))}
+          </List>
+          <Box mt={4}>
+            <TextField
+              label="Create Post"
+              multiline
+              rows={3}
+              variant="outlined"
+              fullWidth
+              value={newPostContent}
+              onChange={(e) => setNewPostContent(e.target.value)}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleCreatePost}
+              disabled={creatingPost}
+              sx={{ mt: 2 }}
+            >
+              {creatingPost ? 'Posting...' : 'Create Post'}
+            </Button>
+          </Box>
         </BodyBox>
       </Container>
     </ThemeProvider>
