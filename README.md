@@ -8,10 +8,10 @@
 * **Intuitive Navigation:** Explore a curated list of forums, each catering to specific interests and fostering focused discussions.  
 * **Engaging Forums:** Each forum offers a dedicated space for in-depth discussions on various topics related to human-AI interaction. Explore diverse perspectives and contribute your own insights.  
 * **Threaded Discussions:** Dive deeper into specific topics within forums using our threaded discussion system. Ask questions, share experiences, and engage in meaningful conversations.  
-* **Search:** (Functionality to be implemented) Utilize our search functionality to quickly find relevant discussions or topics within forums.  
-* **Advanced Post Creation:** Craft well-structured posts with rich formatting options, allowing you to express yourself clearly and effectively. (Functionality to be implemented)  
+* **Search:** *(Functionality to be implemented)* Utilize our search functionality to quickly find relevant discussions or topics within forums.  
+* **Advanced Post Creation:** Craft well-structured posts with rich formatting options, allowing you to express yourself clearly and effectively. *(Functionality to be implemented)*  
 * **Admin Panel:** For authorized users, our comprehensive admin panel provides tools for managing forums, including creating new ones and maintaining a well-organized forum ecosystem.  
-* **Multilingual Support:** (Functionality to be implemented) As we strive towards global inclusivity, we are actively working to integrate multilingual support to facilitate communication across borders.  
+* **Multilingual Support:** *(Functionality to be implemented)* As we strive towards global inclusivity, we are actively working to integrate multilingual support to facilitate communication across borders.  
 * **A few more** which AI writing this readme.md file didn’t catch.  
 * **A lot of time-consuming details.**
 
