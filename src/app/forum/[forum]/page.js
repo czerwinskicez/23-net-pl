@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, Container, ThemeProvider, Typography, Button, Alert } from '@mui/material';
+import { Box, Container, ThemeProvider, Typography, Button, Snackbar, Alert } from '@mui/material';
 import { auth, db, onAuthStateChanged } from '../../../firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
 import BodyBox from '../../../components/BodyBox';
@@ -10,7 +10,8 @@ import theme from '../../theme';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import ThreadsTable from '../../../components/ThreadsTable';
 import CreateThreadDialog from '../../../components/CreateThreadDialog';
-import AddIcon from '@mui/icons-material/Add'; // Import AddIcon
+import AddIcon from '@mui/icons-material/Add';
+import CustomBreadcrumbs from '../../../components/CustomBreadcrumbs';
 
 const ForumPage = ({ params }) => {
   const { forum } = params;
@@ -79,6 +80,13 @@ const ForumPage = ({ params }) => {
           ) : (
             forumData && (
               <>
+                <CustomBreadcrumbs
+                  links={[
+                    { label: 'Start', href: '/start' },
+                  ]}
+                  current={forumData.name}
+                />
+
                 <Box sx={{ width: "90%", marginBottom: "10px" }}>
                   <Typography variant="h4">{forumData.name}</Typography>
                   <Typography variant="body1">{forumData.description}</Typography>

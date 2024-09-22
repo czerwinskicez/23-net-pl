@@ -58,10 +58,10 @@ const ThreadsTable = ({ forum, handleRowClick, isAdmin }) => {
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell style={{ fontWeight: 700 }}>Thread Title</TableCell>
-            <TableCell style={{ fontWeight: 700 }}>Thread Creator</TableCell>
-            <TableCell style={{ fontWeight: 700 }}>Created Timestamp</TableCell>
-            <TableCell style={{ fontWeight: 700 }}>Number of Posts</TableCell> {/* Change header */}
+            <TableCell style={{ fontWeight: 700 }}>Title</TableCell>
+            <TableCell style={{ fontWeight: 700 }}>Creator</TableCell>
+            <TableCell style={{ fontWeight: 700 }}>Timestamp</TableCell>
+            <TableCell style={{ fontWeight: 700 }}>Posts</TableCell> {/* Change header */}
             {isAdmin && <TableCell style={{ fontWeight: 700 }}>Actions</TableCell>}
           </TableRow>
         </TableHead>
