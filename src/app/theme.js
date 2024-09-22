@@ -11,9 +11,11 @@ const theme = createTheme({
     },
     background: {
       default: '#edd',
+      dark: '#2f3943', // Added secondary background color
     },
     text: {
       primary: 'rgba(0, 0, 0, 0.87)',
+      darkBackground: 'rgba(232, 232, 232, 0.87)',
     },
   },
   typography: {
