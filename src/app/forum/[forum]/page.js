@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import { Box, Container, ThemeProvider, Typography, Button, Alert } from '@mui/material';
 import { auth, db, onAuthStateChanged } from '../../../firebaseConfig';
 import { doc, getDoc } from 'firebase/firestore';
-import MyAppBar from '../../../components/AppBar';
 import BodyBox from '../../../components/BodyBox';
 import theme from '../../theme';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import ThreadsTable from '../../../components/ThreadsTable';
 import CreateThreadDialog from '../../../components/CreateThreadDialog';
+import AddIcon from '@mui/icons-material/Add'; // Import AddIcon
 
 const ForumPage = ({ params }) => {
   const { forum } = params;
@@ -71,7 +71,6 @@ const ForumPage = ({ params }) => {
   return (
     <ThemeProvider theme={theme}>
       <Container maxWidth={isLargeScreen ? 'md' : 'sm'}>
-        <MyAppBar />
         <BodyBox>
           {errorMessage ? (
             <Typography variant="h6" color="error">
@@ -80,11 +79,13 @@ const ForumPage = ({ params }) => {
           ) : (
             forumData && (
               <>
-                <Typography variant="h4">{forumData.name}</Typography>
-                <Typography variant="body1">{forumData.description}</Typography>
+                <Box sx={{ width: "90%", marginBottom: "10px" }}>
+                  <Typography variant="h4">{forumData.name}</Typography>
+                  <Typography variant="body1">{forumData.description}</Typography>
+                </Box>
 
                 <Box display="flex" justifyContent="flex-end" sx={{ width: "90%", marginBottom: "10px" }}>
-                  <Button variant="contained" color="primary" onClick={handleClickOpen}>
+                  <Button variant="contained" color="primary" onClick={handleClickOpen} endIcon={<AddIcon />}>
                     Create Thread
                   </Button>
                 </Box>

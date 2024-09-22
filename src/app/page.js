@@ -12,7 +12,6 @@ import {
   onAuthStateChanged,
   signInWithPopup
 } from '../firebaseConfig';
-import MyAppBar from '../components/AppBar';
 
 // import { useTheme } from '@mui/material/styles';
 import { ThemeProvider } from '@mui/material/styles';
@@ -146,7 +145,6 @@ export default function Home() {
   return (
     <ThemeProvider theme={theme}>
       <Container maxWidth={isLargeScreen ? 'md' : 'sm'}>
-        <MyAppBar />
         <BodyBox
           display="flex"
           flexDirection="column"

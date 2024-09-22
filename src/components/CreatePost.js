@@ -3,6 +3,7 @@ import { TextField, Button, Paper, Typography } from '@mui/material';
 import { auth, db } from '../firebaseConfig';
 import { addDoc, collection, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import SetDisplayNameModal from './SetDisplayNameModal';
+import Send from '@mui/icons-material/Send';
 
 const CreatePost = ({ forum, threadId, fetchPosts }) => {
   const [newPostContent, setNewPostContent] = useState('');
@@ -85,6 +86,7 @@ const CreatePost = ({ forum, threadId, fetchPosts }) => {
           color="primary"
           onClick={handleAddPost}
           disabled={!displayName || isSubmitting}
+          endIcon={<Send/>}
         >
           Add Post
         </Button>

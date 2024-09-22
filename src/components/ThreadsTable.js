@@ -1,21 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, CircularProgress, Box } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { collection, query, getDocs, orderBy, deleteDoc } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy, deleteDoc, doc } from 'firebase/firestore'; // Import doc
 import { db } from '../firebaseConfig';
 
 const ThreadsTable = ({ forum, handleRowClick, isAdmin }) => {
   const [threads, setThreads] = useState([]);
+  const [loading, setLoading] = useState(true); // Add loading state
 
   useEffect(() => {
     const fetchThreads = async () => {
       try {
         const threadsQuery = query(collection(db, `forums/${forum}/threads`), orderBy('lastPostTimestamp', 'desc'));
         const threadsSnapshot = await getDocs(threadsQuery);
-        const threadsList = threadsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const threadsList = await Promise.all(threadsSnapshot.docs.map(async (doc) => {
+          const postsQuery = query(collection(db, `forums/${forum}/threads/${doc.id}/posts`));
+          const postsSnapshot = await getDocs(postsQuery);
+          return { id: doc.id, ...doc.data(), postCount: postsSnapshot.size };
+        }));
         setThreads(threadsList);
       } catch (error) {
         console.error('Error fetching threads:', error);
+      } finally {
+        setLoading(false); // Set loading to false after data is fetched
       }
     };
 
@@ -31,6 +38,21 @@ const ThreadsTable = ({ forum, handleRowClick, isAdmin }) => {
     }
   };
 
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100%',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <TableContainer component={Paper} style={{ width: "90%" }}>
       <Table>
@@ -39,7 +61,7 @@ const ThreadsTable = ({ forum, handleRowClick, isAdmin }) => {
             <TableCell style={{ fontWeight: 700 }}>Thread Title</TableCell>
             <TableCell style={{ fontWeight: 700 }}>Thread Creator</TableCell>
             <TableCell style={{ fontWeight: 700 }}>Created Timestamp</TableCell>
-            <TableCell style={{ fontWeight: 700 }}>Last Post Timestamp</TableCell>
+            <TableCell style={{ fontWeight: 700 }}>Number of Posts</TableCell> {/* Change header */}
             {isAdmin && <TableCell style={{ fontWeight: 700 }}>Actions</TableCell>}
           </TableRow>
         </TableHead>
@@ -59,7 +81,7 @@ const ThreadsTable = ({ forum, handleRowClick, isAdmin }) => {
               <TableCell>{thread.title}</TableCell>
               <TableCell>{thread.creator}</TableCell>
               <TableCell>{new Date(thread.createdAt.seconds * 1000).toLocaleString()}</TableCell>
-              <TableCell>{new Date(thread.lastPostTimestamp.seconds * 1000).toLocaleString()}</TableCell>
+              <TableCell>{thread.postCount}</TableCell> {/* Display number of posts */}
               {isAdmin && (
                 <TableCell>
                   <IconButton onClick={(e) => { e.stopPropagation(); handleDeleteThread(thread.id); }} color="secondary">

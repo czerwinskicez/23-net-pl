@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, Alert } from '@mui/material';
+import { Container, Typography, Alert, CircularProgress, Box } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { db } from '../../firebaseConfig';
-import MyAppBar from '../../components/AppBar';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../theme';
@@ -19,6 +18,7 @@ const AdminPage = () => {
   const [alertMessage, setAlertMessage] = useState('');
   const [alertSeverity, setAlertSeverity] = useState('success');
   const [forums, setForums] = useState([]);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
   const auth = getAuth();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
@@ -30,9 +30,10 @@ const AdminPage = () => {
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists() && userDoc.data().admin) {
           setIsAdmin(true);
-          fetchForums(); // Fetch forums when user is an admin
+          fetchForums();
         }
       }
+      setLoading(false);
     };
 
     onAuthStateChanged(auth, (user) => {
@@ -41,6 +42,7 @@ const AdminPage = () => {
       } else {
         setIsAdmin(false);
         router.push('/');
+        setLoading(false);
       }
     });
   }, [auth, router]);
@@ -64,7 +66,6 @@ const AdminPage = () => {
   return (
     <ThemeProvider theme={theme}>
       <Container maxWidth={isLargeScreen ? 'md' : 'sm'}>
-        <MyAppBar />
         <BodyBox
           display="flex"
           flexDirection="column"
@@ -74,7 +75,18 @@ const AdminPage = () => {
           textAlign="center"
           sx={{ backgroundColor: theme.palette.background.default }}
         >
-          {isAdmin ? (
+          {loading ? (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100%',
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          ) : isAdmin ? (
             <>
               <Typography variant="h4" gutterBottom>
                 Admin Panel

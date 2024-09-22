@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { List, ListItem, ListItemText, Divider, Menu, MenuItem, IconButton, Typography, Snackbar, Paper } from '@mui/material';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { List, Typography, Snackbar, Paper } from '@mui/material';
 import { db, auth, getDoc, doc } from '../firebaseConfig';
-import { deleteDoc } from 'firebase/firestore';
+import Post from './Post';
 
 const PostsList = ({ forum, threadId, posts, fetchPosts }) => {
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedPostId, setSelectedPostId] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [userNames, setUserNames] = useState({});
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -41,29 +38,17 @@ const PostsList = ({ forum, threadId, posts, fetchPosts }) => {
     fetchUserNames();
   }, [posts]);
 
-  const handleMenuOpen = (event, postId) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedPostId(postId);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setSelectedPostId(null);
-  };
-
-  const handleCopyLink = () => {
-    const postUrl = `${window.location.origin}/forum/${forum}/${threadId}#${selectedPostId}`;
+  const handleCopyLink = (postId) => {
+    const postUrl = `${window.location.origin}/forum/${forum}/${threadId}#${postId}`;
     navigator.clipboard.writeText(postUrl).then(() => {
       setSnackbarOpen(true);
     });
-    handleMenuClose();
   };
 
-  const handleDeletePost = async () => {
+  const handleDeletePost = async (postId) => {
     try {
-      await deleteDoc(doc(db, `forums/${forum}/threads/${threadId}/posts/${selectedPostId}`));
+      await deleteDoc(doc(db, `forums/${forum}/threads/${threadId}/posts/${postId}`));
       fetchPosts(); // Refresh the posts list
-      handleMenuClose();
     } catch (error) {
       console.error('Error deleting post:', error);
     }
@@ -82,45 +67,17 @@ const PostsList = ({ forum, threadId, posts, fetchPosts }) => {
         {posts.length > 0 ? (
           <List>
             {posts.map((post) => (
-              <React.Fragment key={post.id}>
-                <ListItem alignItems="flex-start" id={post.id}>
-                  <ListItemText
-                    primary={post.description}
-                    secondary={
-                      <span style={{ marginTop: '8px', display: 'block' }}>
-                        <Typography
-                          component="span"
-                          variant="body2"
-                          color="textPrimary"
-                          style={{ display: 'inline', marginRight: '10px' }}
-                        >
-                          {userNames[post.creatorId] || 'Unknown User'}
-                        </Typography>
-                        <Typography
-                          component="span"
-                          variant="body2"
-                          color="textSecondary"
-                          style={{ display: 'inline' }}
-                        >
-                          {new Date(post.createdAt.seconds * 1000).toLocaleString()}
-                        </Typography>
-                      </span>
-                    }
-                  />
-                  <IconButton onClick={(event) => handleMenuOpen(event, post.id)}>
-                    <MoreVertIcon />
-                  </IconButton>
-                  <Menu
-                    anchorEl={anchorEl}
-                    open={Boolean(anchorEl)}
-                    onClose={handleMenuClose}
-                  >
-                    <MenuItem onClick={handleCopyLink}>Copy Link</MenuItem>
-                    {isAdmin && <MenuItem onClick={handleDeletePost}>Delete Post</MenuItem>}
-                  </Menu>
-                </ListItem>
-                <Divider component="li" />
-              </React.Fragment>
+              <Post
+                key={post.id}
+                post={post}
+                forum={forum}
+                threadId={threadId}
+                isAdmin={isAdmin}
+                fetchPosts={fetchPosts}
+                userNames={userNames}
+                handleCopyLink={handleCopyLink}
+                handleDeletePost={handleDeletePost}
+              />
             ))}
           </List>
         ) : (

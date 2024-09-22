@@ -6,34 +6,38 @@ import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
 import { useRouter } from 'next/navigation';
 import { auth, db, doc, getDoc } from '../firebaseConfig';
 import { signOut } from 'firebase/auth';
-import SetDisplayNameModal from './SetDisplayNameModal'; // Import the component
+import SetDisplayNameModal from './SetDisplayNameModal';
 
 export default function MyAppBar() {
   const [anchorEl, setAnchorEl] = useState(null);
-  const [userEmail, setUserEmail] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
-        setUserEmail(user.email);
         try {
           const userDoc = doc(db, 'public_users', user.uid);
           const userSnapshot = await getDoc(userDoc);
           if (userSnapshot.exists()) {
-            setIsAdmin(userSnapshot.data().admin || false);
+            const userData = userSnapshot.data();
+            setDisplayName(userData.displayName || 'Unnamed');
+            setIsAdmin(userData.admin || false);
           } else {
+            setDisplayName('');
             setIsAdmin(false);
           }
         } catch (error) {
           console.error("Error fetching user data: ", error);
         }
       } else {
-        setUserEmail('');
+        setDisplayName('');
         setIsAdmin(false);
       }
+      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -75,7 +79,7 @@ export default function MyAppBar() {
   };
 
   const handleSuccess = (newDisplayName) => {
-    setUserEmail(newDisplayName); // Update the displayed email with the new display name
+    setDisplayName(newDisplayName);
   };
 
   return (
@@ -89,10 +93,10 @@ export default function MyAppBar() {
           >
             23.net.pl
           </Typography>
-          {userEmail && (
+          {!loading && displayName && (
             <div style={{ display: 'flex', alignItems: 'center' }}>
               <Typography variant="body1" sx={{ marginRight: 2, color: 'white' }}>
-                {userEmail}
+                {displayName}
               </Typography>
               <IconButton
                 edge="end"

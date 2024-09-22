@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { Container, ThemeProvider, Typography, Paper } from '@mui/material';
 import { doc, getDoc, collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { db } from '../../../../firebaseConfig';
-import MyAppBar from '../../../../components/AppBar';
 import BodyBox from '../../../../components/BodyBox';
 import theme from '../../../theme';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -54,7 +53,6 @@ const ThreadPage = ({ params }) => {
   return (
     <ThemeProvider theme={theme}>
       <Container maxWidth={isLargeScreen ? 'md' : 'sm'}>
-        <MyAppBar />
         <BodyBox>
           {errorMessage ? (
             <Typography variant="h6" color="error">

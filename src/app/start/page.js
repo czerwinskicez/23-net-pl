@@ -5,7 +5,6 @@ import React, { useEffect } from 'react';
 import { Container, Box, Typography } from '@mui/material';
 import { useRouter } from 'next/navigation';
 import { auth, onAuthStateChanged } from '../../firebaseConfig';
-import MyAppBar from '../../components/AppBar';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { ThemeProvider } from '@mui/material/styles';
 import theme from '../theme'; // Import the theme
@@ -30,7 +29,6 @@ export default function Start() {
   return (
     <ThemeProvider theme={theme}> {/* Wrap with ThemeProvider */}
       <Container maxWidth={isLargeScreen ? 'md' : 'sm'}>
-        <MyAppBar />
         <BodyBox>
           <ForumList /> {/* Use the ForumList component */}
         </BodyBox>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, List, ListItem, ListItemText, Badge } from '@mui/material';
+import { Box, Typography, List, ListItem, ListItemText, Badge, CircularProgress } from '@mui/material';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebaseConfig'; // Make sure to import your Firestore config
 import { useTheme } from '@mui/material/styles'; // Import useTheme
@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'; // Import useRouter
 
 const ForumList = () => {
   const [forums, setForums] = useState([]);
+  const [loading, setLoading] = useState(true); // Add loading state
   const theme = useTheme(); // Access the theme
   const router = useRouter(); // Initialize useRouter
 
@@ -28,6 +29,8 @@ const ForumList = () => {
         setForums(forumsList);
       } catch (err) {
         console.error('Failed to fetch forums:', err);
+      } finally {
+        setLoading(false); // Set loading to false after data is fetched
       }
     };
 
@@ -37,6 +40,21 @@ const ForumList = () => {
   const handleNavigation = (pathname) => {
     router.push(`/forum/${pathname}`); // Navigate to the forum's pathname
   };
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    ); // Display CircularProgress while loading
+  }
 
   return (
     <Box sx={{ padding: theme.spacing(2), width: '90%' }}> {/* Set width to 90% */}
@@ -63,17 +81,16 @@ const ForumList = () => {
               secondary={forum.description} 
               sx={{ color: theme.palette.primary.main }} 
             />
-<Badge 
-  badgeContent={forum.threadCount} 
-  sx={{ 
-    position: 'absolute', 
-    top: theme.spacing(2), 
-    right: theme.spacing(2), 
-    backgroundColor: 'transparent', 
-    color: theme.palette.primary.main, 
-  }} 
-/>
-
+            <Badge 
+              badgeContent={forum.threadCount} 
+              sx={{ 
+                position: 'absolute', 
+                top: theme.spacing(2), 
+                right: theme.spacing(2), 
+                backgroundColor: 'transparent', 
+                color: theme.palette.primary.main, 
+              }} 
+            />
           </ListItem>
         ))}
       </List>
