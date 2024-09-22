@@ -16,9 +16,25 @@ const ThreadPage = ({ params }) => {
   const { forum, threadId } = params;
   const router = useRouter();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
+  const [forumData, setForumData] = useState(null);
   const [threadData, setThreadData] = useState(null);
   const [posts, setPosts] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
+
+  const fetchForumData = async () => {
+    try {
+      const forumDocRef = doc(db, `forums/${forum}`);
+      const forumDoc = await getDoc(forumDocRef);
+      if (forumDoc.exists()) {
+        setForumData(forumDoc.data());
+      } else {
+        setErrorMessage('No such forum!');
+      }
+    } catch (error) {
+      setErrorMessage('Error fetching forum data.');
+      console.error('Error fetching forum data:', error);
+    }
+  };
 
   const fetchThreadData = async () => {
     try {
@@ -47,6 +63,7 @@ const ThreadPage = ({ params }) => {
   };
 
   useEffect(() => {
+    fetchForumData();
     fetchThreadData();
     fetchPosts();
   }, [forum, threadId]);
@@ -60,12 +77,12 @@ const ThreadPage = ({ params }) => {
               {errorMessage}
             </Typography>
           ) : (
-            threadData && (
+            forumData && threadData && (
               <>
                 <CustomBreadcrumbs
                   links={[
                     { label: 'Start', href: '/start' },
-                    { label: forum, href: `/forum/${forum}` }
+                    { label: forumData.name, href: `/forum/${forum}` }
                   ]}
                   current={threadData.title}
                 />
