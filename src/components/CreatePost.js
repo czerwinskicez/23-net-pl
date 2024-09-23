@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Paper, Typography } from '@mui/material';
+import { TextField, Button, Paper, Typography, Box } from '@mui/material';
 import { auth, db } from '../firebaseConfig';
 import { addDoc, collection, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import SetDisplayNameModal from './SetDisplayNameModal';
 import Send from '@mui/icons-material/Send';
+import ImageUpload from './ImageUpload'; // Import the ImageUpload component
 
 const CreatePost = ({ forum, threadId, fetchPosts }) => {
   const [newPostContent, setNewPostContent] = useState('');
@@ -11,6 +12,7 @@ const CreatePost = ({ forum, threadId, fetchPosts }) => {
   const [displayName, setDisplayName] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageUrl, setImageUrl] = useState(''); // State for image URL
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -24,8 +26,8 @@ const CreatePost = ({ forum, threadId, fetchPosts }) => {
   }, []);
 
   const handleAddPost = async () => {
-    if (newPostContent.trim() === '') {
-      setErrorMessage('Post content cannot be empty.');
+    if (newPostContent.trim() === '' && !imageUrl) {
+      setErrorMessage('Post content or image cannot be empty.');
       return;
     }
 
@@ -40,6 +42,7 @@ const CreatePost = ({ forum, threadId, fetchPosts }) => {
       const newPost = {
         creatorId: auth.currentUser.uid,
         description: newPostContent,
+        imageUrl: imageUrl, // Include image URL in the post
         createdAt: serverTimestamp(),
       };
       await addDoc(collection(db, `forums/${forum}/threads/${threadId}/posts`), newPost);
@@ -59,6 +62,10 @@ const CreatePost = ({ forum, threadId, fetchPosts }) => {
     setDisplayName(newDisplayName);
     setIsModalOpen(false);
     handleAddPost(); // Proceed with adding the post
+  };
+
+  const getFileNameFromUrl = (url) => {
+    return url.substring(url.lastIndexOf('/') + 1);
   };
 
   return (
@@ -81,15 +88,24 @@ const CreatePost = ({ forum, threadId, fetchPosts }) => {
           style={{ marginBottom: '16px' }}
           disabled={!displayName || isSubmitting}
         />
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleAddPost}
-          disabled={!displayName || isSubmitting}
-          endIcon={<Send/>}
-        >
-          Add Post
-        </Button>
+        {imageUrl && (
+          <Box display="flex" alignItems="center" style={{ marginBottom: '16px' }}>
+            <img src={imageUrl} alt="Uploaded" style={{ height: '50px', marginRight: '8px' }} />
+            <Typography variant="body2">{getFileNameFromUrl(imageUrl)}</Typography>
+          </Box>
+        )}
+        <Box display="flex" justifyContent="flex-end" alignItems="center" gap={2}>
+          <ImageUpload onUploadSuccess={(url) => setImageUrl(url)} /> {/* Include ImageUpload component */}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleAddPost}
+            disabled={!displayName || isSubmitting}
+            endIcon={<Send />}
+          >
+            Add Post
+          </Button>
+        </Box>
         {errorMessage && (
           <Typography variant="body2" color="error">
             {errorMessage}

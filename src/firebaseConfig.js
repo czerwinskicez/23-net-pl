@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { getFirestore, doc, getDoc, getDocs, updateDoc, serverTimestamp, collection, writeBatch } from 'firebase/firestore'; // Import Firestore
+import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDzqu9SzaFROpXB6bzjF6CNUurVUXcKZaA",
@@ -14,7 +15,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app); // Initialize Firestore
+const db = getFirestore(app); 
 const provider = new GoogleAuthProvider();
+const storage = getStorage(app);
 
-export { getFirestore, updateDoc, serverTimestamp, collection, writeBatch, doc, getDoc, getDocs, auth, provider, signInWithRedirect, signInWithPopup, sendPasswordResetEmail, getRedirectResult, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, db }; // Export Firestore
+export { getFirestore, storage, updateDoc, serverTimestamp, collection, writeBatch, doc, getDoc, getDocs, auth, provider, signInWithRedirect, signInWithPopup, sendPasswordResetEmail, getRedirectResult, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, db }; // Export Firestore

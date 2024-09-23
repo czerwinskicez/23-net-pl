@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { List, Typography, Snackbar, Paper } from '@mui/material';
-import { db, auth, getDoc, doc } from '../firebaseConfig';
+import { db, auth, getDoc, doc, deleteDoc } from '../firebaseConfig';
 import Post from './Post';
 
 const PostsList = ({ forum, threadId, posts, fetchPosts }) => {

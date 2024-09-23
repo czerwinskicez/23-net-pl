@@ -1,44 +1,49 @@
 import React, { useState } from 'react';
-import { ListItem, ListItemText, Divider, Menu, MenuItem, IconButton, Typography, Snackbar, Alert } from '@mui/material';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
+import { Card, CardContent, Typography, Box, Divider, Snackbar, Alert } from '@mui/material';
+import { doc, deleteDoc, getDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
+import { db } from '../firebaseConfig';
+import PostMenu from './PostMenu';
+import Thumbnail from './Thumbnail';
 
-const Post = ({ post, forum, threadId, isAdmin, fetchPosts, userNames, handleCopyLink, handleDeletePost }) => {
-  const [anchorEl, setAnchorEl] = useState(null);
+const Post = ({ post, forum, threadId, isAdmin, fetchPosts, userNames, handleCopyLink }) => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
   };
 
-  const handleReportPost = async (postId) => {
+  const handleDialogOpen = () => {
+    setDialogOpen(true);
+  };
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+  };
+
+  const handleDeletePost = async (postId) => {
     const auth = getAuth();
     const user = auth.currentUser;
 
     if (user) {
-      try {
-        await addDoc(collection(db, 'reported_posts'), {
-          postId,
-          reportedAt: new Date(),
-          reportedBy: user.uid, // Save the user ID of the currently logged-in user
-        });
-        setSnackbarMessage('Post reported successfully.');
-        setSnackbarSeverity('success');
-      } catch (error) {
-        console.error('Error reporting post:', error);
-        setSnackbarMessage('Error reporting post.');
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (userDoc.exists() && userDoc.data().admin) {
+        try {
+          await deleteDoc(doc(db, `forums/${forum}/threads/${threadId}/posts/${postId}`));
+          setSnackbarMessage('Post deleted successfully.');
+          setSnackbarSeverity('success');
+          fetchPosts(); // Refresh the posts list
+        } catch (error) {
+          console.error('Error deleting post:', error);
+          setSnackbarMessage('Error deleting post.');
+          setSnackbarSeverity('error');
+        }
+      } else {
+        console.error('User is not an admin.');
+        setSnackbarMessage('User is not an admin.');
         setSnackbarSeverity('error');
       }
     } else {
@@ -47,49 +52,48 @@ const Post = ({ post, forum, threadId, isAdmin, fetchPosts, userNames, handleCop
       setSnackbarSeverity('error');
     }
     setSnackbarOpen(true);
-    handleMenuClose();
   };
 
   return (
     <>
-      <ListItem alignItems="flex-start" id={post.id}>
-        <ListItemText
-          primary={post.description}
-          secondary={
-            <span style={{ marginTop: '8px', display: 'block' }}>
-              <Typography
-                component="span"
-                variant="body2"
-                color="textPrimary"
-                style={{ display: 'inline', marginRight: '10px' }}
-              >
+      <Card id={post.id} sx={{ marginBottom: 2, position: 'relative' }}>
+        <CardContent>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography variant="h6" component="div" sx={{ marginRight: 1 }}>
                 {userNames[post.creatorId] || 'Unknown User'}
               </Typography>
-              <Typography
-                component="span"
-                variant="body2"
-                color="textSecondary"
-                style={{ display: 'inline' }}
-              >
+              <Typography variant="body2" color="textSecondary">
                 {new Date(post.createdAt.seconds * 1000).toLocaleString()}
               </Typography>
-            </span>
-          }
-        />
-        <IconButton onClick={handleMenuOpen}>
-          <MoreVertIcon />
-        </IconButton>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleMenuClose}
-        >
-          <MenuItem onClick={() => handleCopyLink(post.id)}>Copy Link</MenuItem>
-          <MenuItem onClick={() => handleReportPost(post.id)}>Report Post</MenuItem>
-          {isAdmin && <MenuItem onClick={() => handleDeletePost(post.id)}>Delete Post</MenuItem>}
-        </Menu>
-      </ListItem>
-      <Divider component="li" />
+            </Box>
+            <PostMenu
+              postId={post.id}
+              isAdmin={isAdmin}
+              handleCopyLink={handleCopyLink}
+              handleDeletePost={handleDeletePost}
+            />
+          </Box>
+          <Typography
+            variant="body1"
+            component="pre"
+            sx={{ textAlign: 'left', marginTop: 2, whiteSpace: 'pre-wrap' }}
+          >
+            {post.description}
+          </Typography>
+          {post.imageUrl && (
+            <Box sx={{ textAlign: 'left', marginTop: 2 }}>
+              <img
+                src={post.imageUrl}
+                alt="Post Thumbnail"
+                style={{ maxHeight: '123px', cursor: 'pointer' }}
+                onClick={handleDialogOpen}
+              />
+            </Box>
+          )}
+        </CardContent>
+      </Card>
+      <Divider />
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
@@ -99,6 +103,7 @@ const Post = ({ post, forum, threadId, isAdmin, fetchPosts, userNames, handleCop
           {snackbarMessage}
         </Alert>
       </Snackbar>
+      <Thumbnail imageUrl={post.imageUrl} open={dialogOpen} onClose={handleDialogClose} />
     </>
   );
 };
