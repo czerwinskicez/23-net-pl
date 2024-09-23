@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button, CircularProgress, Typography, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Button, CircularProgress, Typography, Dialog, DialogActions, DialogContent, DialogTitle, Box, Avatar } from '@mui/material';
 import { MuiFileInput } from 'mui-file-input';
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { doc, updateDoc } from 'firebase/firestore';
@@ -9,17 +9,21 @@ const SetAvatarModal = ({ isOpen, onClose, onSuccess }) => {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
+  const [preview, setPreview] = useState(null);
 
   const handleFileChange = (newFile) => {
     if (newFile && !newFile.type.startsWith('image/')) {
       setError('Please select a valid image file.');
       setFile(null);
+      setPreview(null);
     } else if (newFile && newFile.size > 10 * 1024 * 1024) { // 10MB size limit
       setError('File size should be less than 10MB.');
       setFile(null);
+      setPreview(null);
     } else {
       setError('');
       setFile(newFile);
+      setPreview(URL.createObjectURL(newFile));
     }
   };
 
@@ -50,12 +54,24 @@ const SetAvatarModal = ({ isOpen, onClose, onSuccess }) => {
           await updateDoc(userDoc, { photoURL: downloadURL });
           onSuccess(downloadURL);
           onClose();
+          window.location.reload(); // Refresh the page
         } catch (error) {
           setError('Failed to get download URL.');
           setUploading(false);
         }
       }
     );
+  };
+
+  const handleRemove = async () => {
+    try {
+      const userDoc = doc(db, 'public_users', auth.currentUser.uid);
+      await updateDoc(userDoc, { photoURL: null });
+      onClose();
+      window.location.reload(); // Refresh the page
+    } catch (error) {
+      setError('Failed to remove avatar.');
+    }
   };
 
   return (
@@ -69,10 +85,18 @@ const SetAvatarModal = ({ isOpen, onClose, onSuccess }) => {
           accept="image/*"
         />
         {error && <Typography color="error">{error}</Typography>}
+        {preview && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 2 }}>
+            <Avatar src={preview} sx={{ width: 100, height: 100 }} />
+          </Box>
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="primary">
           Cancel
+        </Button>
+        <Button onClick={handleRemove} variant="outlined" color="primary" disabled={uploading}>
+          Remove
         </Button>
         <Button onClick={handleUpload} color="primary" variant="contained" disabled={uploading}>
           {uploading ? <CircularProgress size={24} /> : 'Upload'}
