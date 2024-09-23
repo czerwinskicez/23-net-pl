@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, CardContent, Typography, Box, Divider, Snackbar, Alert } from '@mui/material';
+import { Card, CardContent, Typography, Box, Divider, Snackbar, Alert, Avatar } from '@mui/material';
 import { doc, deleteDoc, getDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { db } from '../firebaseConfig';
@@ -29,7 +29,7 @@ const Post = ({ post, forum, threadId, isAdmin, fetchPosts, userNames, handleCop
     const user = auth.currentUser;
 
     if (user) {
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      const userDoc = await getDoc(doc(db, 'public_users', user.uid));
       if (userDoc.exists() && userDoc.data().admin) {
         try {
           await deleteDoc(doc(db, `forums/${forum}/threads/${threadId}/posts/${postId}`));
@@ -60,8 +60,13 @@ const Post = ({ post, forum, threadId, isAdmin, fetchPosts, userNames, handleCop
         <CardContent>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Avatar
+                alt={userNames[post.creatorId]?.displayName || 'Unknown User'}
+                src={userNames[post.creatorId]?.photoURL || ''}
+                sx={{ marginRight: 1 }}
+              />
               <Typography variant="h6" component="div" sx={{ marginRight: 1 }}>
-                {userNames[post.creatorId] || 'Unknown User'}
+                {userNames[post.creatorId]?.displayName || 'Unknown User'}
               </Typography>
               <Typography variant="body2" color="textSecondary">
                 {new Date(post.createdAt.seconds * 1000).toLocaleString()}

@@ -28,7 +28,11 @@ const PostsList = ({ forum, threadId, posts, fetchPosts }) => {
       for (const userId of uniqueUserIds) {
         const userDoc = await getDoc(doc(db, `public_users/${userId}`));
         if (userDoc.exists()) {
-          userNamesTemp[userId] = userDoc.data().displayName;
+          const userData = userDoc.data();
+          userNamesTemp[userId] = {
+            displayName: userData.displayName,
+            photoURL: userData.photoURL || null,
+          };
         }
       }
 
