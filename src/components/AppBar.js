@@ -2,17 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { AppBar, Toolbar, Typography, IconButton, Menu, MenuItem } from '@mui/material';
+import Divider from '@mui/material/Divider';
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
 import { useRouter } from 'next/navigation';
 import { auth, db, doc, getDoc } from '../firebaseConfig';
 import { signOut } from 'firebase/auth';
 import SetDisplayNameModal from './SetDisplayNameModal';
+import RulesModal from './RulesModal'; // Import the RulesModal component
 
 export default function MyAppBar() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayName, setDisplayName] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRulesModalOpen, setIsRulesModalOpen] = useState(false); // State for RulesModal
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -78,6 +81,15 @@ export default function MyAppBar() {
     setIsModalOpen(false);
   };
 
+  const handleOpenRulesModal = () => {
+    setIsRulesModalOpen(true);
+    handleClose();
+  };
+
+  const handleCloseRulesModal = () => {
+    setIsRulesModalOpen(false);
+  };
+
   const handleSuccess = (newDisplayName) => {
     setDisplayName(newDisplayName);
   };
@@ -125,7 +137,10 @@ export default function MyAppBar() {
                 disableScrollLock
               >
                 {isAdmin && <MenuItem onClick={handleAdmin}>Admin</MenuItem>}
+                {isAdmin && <Divider/>}
                 <MenuItem onClick={handleOpenModal}>Change Display Name</MenuItem>
+                <MenuItem onClick={handleOpenRulesModal}>Rules</MenuItem>
+                <Divider/>
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
               </Menu>
             </div>
@@ -136,6 +151,10 @@ export default function MyAppBar() {
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onSuccess={handleSuccess}
+      />
+      <RulesModal
+        open={isRulesModalOpen}
+        handleClose={handleCloseRulesModal}
       />
     </>
   );
