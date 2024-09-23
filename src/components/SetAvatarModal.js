@@ -96,7 +96,7 @@ const SetAvatarModal = ({ isOpen, onClose, onSuccess }) => {
           Cancel
         </Button>
         <Button onClick={handleRemove} variant="outlined" color="primary" disabled={uploading}>
-          Remove
+          Remove avatar
         </Button>
         <Button onClick={handleUpload} color="primary" variant="contained" disabled={uploading}>
           {uploading ? <CircularProgress size={24} /> : 'Upload'}
