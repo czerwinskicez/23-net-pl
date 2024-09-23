@@ -8,14 +8,16 @@ import { useRouter } from 'next/navigation';
 import { auth, db, doc, getDoc } from '../firebaseConfig';
 import { signOut } from 'firebase/auth';
 import SetDisplayNameModal from './SetDisplayNameModal';
-import RulesModal from './RulesModal'; // Import the RulesModal component
+import RulesModal from './RulesModal';
+import SetAvatarModal from './SetAvatarModal'; // Import the SetAvatarModal component
 
 export default function MyAppBar() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [displayName, setDisplayName] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isRulesModalOpen, setIsRulesModalOpen] = useState(false); // State for RulesModal
+  const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false); // State for SetAvatarModal
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -90,8 +92,21 @@ export default function MyAppBar() {
     setIsRulesModalOpen(false);
   };
 
+  const handleOpenAvatarModal = () => {
+    setIsAvatarModalOpen(true);
+    handleClose();
+  };
+
+  const handleCloseAvatarModal = () => {
+    setIsAvatarModalOpen(false);
+  };
+
   const handleSuccess = (newDisplayName) => {
     setDisplayName(newDisplayName);
+  };
+
+  const handleAvatarSuccess = (newPhotoURL) => {
+    // Optionally update the UI with the new avatar URL
   };
 
   return (
@@ -137,10 +152,11 @@ export default function MyAppBar() {
                 disableScrollLock
               >
                 {isAdmin && <MenuItem onClick={handleAdmin}>Admin</MenuItem>}
-                {isAdmin && <Divider/>}
+                {isAdmin && <Divider />}
                 <MenuItem onClick={handleOpenModal}>Change Display Name</MenuItem>
+                <MenuItem onClick={handleOpenAvatarModal}>Change Avatar</MenuItem>
                 <MenuItem onClick={handleOpenRulesModal}>Rules</MenuItem>
-                <Divider/>
+                <Divider />
                 <MenuItem onClick={handleLogout}>Logout</MenuItem>
               </Menu>
             </div>
@@ -155,6 +171,11 @@ export default function MyAppBar() {
       <RulesModal
         open={isRulesModalOpen}
         handleClose={handleCloseRulesModal}
+      />
+      <SetAvatarModal
+        isOpen={isAvatarModalOpen}
+        onClose={handleCloseAvatarModal}
+        onSuccess={handleAvatarSuccess}
       />
     </>
   );
