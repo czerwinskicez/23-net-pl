@@ -54,7 +54,7 @@ const ThreadsTable = ({ forum, handleRowClick, isAdmin }) => {
   }
 
   return (
-    <TableContainer component={Paper} style={{ width: "90%" }}>
+    <TableContainer component={Paper} style={{ width: "95%" }}>
       <Table>
         <TableHead>
           <TableRow>

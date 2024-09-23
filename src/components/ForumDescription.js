@@ -2,7 +2,7 @@ import { Paper, Typography, Box } from '@mui/material';
 
 function ForumDescription() {
   return (
-    <Paper elevation={6} sx={{ padding: 3, marginTop: 4, width: "90%", backgroundColor: "rgba(232,232,232,0.32)" }}>
+    <Paper elevation={6} sx={{ padding: 3, marginTop: 4, width: "95%", backgroundColor: "rgba(232,232,232,0.32)" }}>
       <Typography variant="h5" gutterBottom>
         Welcome to the Forum for Humans and Robots – where technology meets humanity!
       </Typography>

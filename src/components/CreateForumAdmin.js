@@ -70,7 +70,7 @@ const CreateForumAdmin = ({ forums, onForumAdded, setAlertMessage, setAlertSever
   };
 
   return (
-    <Box sx={{ marginBottom: theme.spacing(2), width: '90%' }}>
+    <Box sx={{ marginBottom: theme.spacing(2), width: '95%' }}>
       {error && <Alert severity="error" sx={{ marginBottom: theme.spacing(2) }}>{error}</Alert>}
       <TextField
         label="Forum Name"

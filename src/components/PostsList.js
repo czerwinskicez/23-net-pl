@@ -63,7 +63,7 @@ const PostsList = ({ forum, threadId, posts, fetchPosts }) => {
 
   return (
     <>
-      <Paper style={{ width: '90%', padding: '16px', marginBottom: '16px' }}>
+      <Paper style={{ width: '95%', padding: '16px', marginBottom: '16px' }}>
         {posts.length > 0 ? (
           <List>
             {posts.map((post) => (

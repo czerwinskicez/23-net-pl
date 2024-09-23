@@ -87,7 +87,7 @@ const ThreadPage = ({ params }) => {
                   current={threadData.title}
                 />
 
-                <Paper style={{ width: '90%', marginBottom: "16px", padding: "16px" }}>
+                <Paper style={{ width: '95%', marginBottom: "16px", padding: "16px" }}>
                   <Typography variant="h4">{threadData.title}</Typography>
                   <Typography variant="body1">{threadData.description}</Typography>
                 </Paper>

@@ -70,7 +70,7 @@ const CreatePost = ({ forum, threadId, fetchPosts }) => {
 
   return (
     <>
-      <Paper style={{ padding: '16px', marginTop: '16px', width: "90%" }}>
+      <Paper style={{ padding: '16px', marginTop: '16px', width: "95%" }}>
         <Typography variant="h6">Add a new post</Typography>
         {!displayName && (
           <Typography variant="body2" color="error" style={{ marginBottom: '16px' }}>

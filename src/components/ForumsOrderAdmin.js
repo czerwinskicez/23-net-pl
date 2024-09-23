@@ -72,7 +72,7 @@ const ForumsOrderAdmin = ({ setAlertMessage, setAlertSeverity }) => {
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="forums">
           {(provided) => (
-            <List {...provided.droppableProps} ref={provided.innerRef} sx={{ width: '90%' }}>
+            <List {...provided.droppableProps} ref={provided.innerRef} sx={{ width: '95%' }}>
               {forums.map((forum, index) => (
                 <Draggable key={forum.id} draggableId={forum.id} index={index}>
                   {(provided) => (

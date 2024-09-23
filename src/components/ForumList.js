@@ -57,7 +57,7 @@ const ForumList = () => {
   }
 
   return (
-    <Box sx={{ padding: theme.spacing(2), width: '90%' }}> {/* Set width to 90% */}
+    <Box sx={{ padding: theme.spacing(2), width: '95%' }}> {/* Set width to 95% */}
       <Typography variant="h4" gutterBottom>
         Available Forums
       </Typography>

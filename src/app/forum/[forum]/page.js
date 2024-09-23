@@ -87,12 +87,12 @@ const ForumPage = ({ params }) => {
                   current={forumData.name}
                 />
 
-                <Box sx={{ width: "90%", marginBottom: "10px" }}>
+                <Box sx={{ width: "95%", marginBottom: "10px" }}>
                   <Typography variant="h4">{forumData.name}</Typography>
                   <Typography variant="body1">{forumData.description}</Typography>
                 </Box>
 
-                <Box display="flex" justifyContent="flex-end" sx={{ width: "90%", marginBottom: "10px" }}>
+                <Box display="flex" justifyContent="flex-end" sx={{ width: "95%", marginBottom: "10px" }}>
                   <Button variant="contained" color="primary" onClick={handleClickOpen} endIcon={<AddIcon />}>
                     Create Thread
                   </Button>
