@@ -1,94 +1,174 @@
-import React, { useState, useEffect } from 'react';
-import {
-    TextField,
-    Button,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Alert,
-} from '@mui/material';
+import React, { useState } from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Alert, Checkbox, FormControlLabel } from '@mui/material';
+import { auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail } from '../firebaseConfig';
+import { useRouter } from 'next/navigation';
+import RulesModal from './RulesModal';
 
-const LoginRegisterDialog = ({ open, onClose, setIsRegister, onLoginSuccess }) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [error, setError] = useState('');
-    const [isRegister, setIsRegisterLocal] = useState(false);
+const AuthDialog = ({ open, handleClose, isRegister }) => {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
+  const [acceptedRules, setAcceptedRules] = useState(false);
+  const [rulesModalOpen, setRulesModalOpen] = useState(false);
 
-    useEffect(() => {
-        setIsRegisterLocal(setIsRegister);
-    }, [setIsRegister]);
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  };
 
-    const handleLogin = () => {
-        // Implement your login logic using `signInWithEmailAndPassword`
-        // ...
-    };
+  const handleRegister = () => {
+    if (!validateEmail(email)) {
+      setError('Invalid email address.');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    if (!acceptedRules) {
+      setError('You must accept the rules.');
+      return;
+    }
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        router.push('/start');
+      })
+      .catch((error) => {
+        setError(error.message);
+      });
+  };
 
-    const handleRegister = () => {
-        // Implement your register logic using `createUserWithEmailAndPassword`
-        // ...
-    };
+  const handlePasswordLogin = () => {
+    if (!validateEmail(email)) {
+      setError('Invalid email address.');
+      return;
+    }
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        router.push('/start');
+      })
+      .catch((error) => {
+        setError(error.message);
+      });
+  };
 
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        setError('');
+  const handlePasswordReset = () => {
+    if (!validateEmail(email)) {
+      setError('Invalid email address.');
+      return;
+    }
+    sendPasswordResetEmail(auth, email)
+      .then(() => {
+        setInfo('Password reset email sent.');
+      })
+      .catch((error) => {
+        setError(error.message);
+      });
+  };
 
-        if (isRegister) {
-            handleRegister();
-        } else {
-            handleLogin();
-        }
-    };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (isRegister) {
+      handleRegister();
+    } else {
+      handlePasswordLogin();
+    }
+  };
 
-    return (
-        <Dialog open={open} onClose={onClose}>
-            <DialogTitle>{isRegister ? 'Register' : 'Login'}</DialogTitle>
-            <DialogContent>
-                <TextField
-                    label="Email"
-                    variant="outlined"
-                    fullWidth
-                    margin="normal"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                />
-                <TextField
-                    label="Password"
-                    type="password"
-                    variant="outlined"
-                    fullWidth
-                    margin="normal"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-                {isRegister && (
-                    <TextField
-                        label="Confirm Password"
-                        type="password"
-                        variant="outlined"
-                        fullWidth
-                        margin="normal"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                    />
-                )}
-                {error && (
-                    <Alert severity="error" sx={{ mt: 2 }}>
-                        {error}
-                    </Alert>
-                )}
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={onClose} color="primary">
-                    Cancel
-                </Button>
-                <Button onClick={handleSubmit} color="primary">
-                    {isRegister ? 'Register' : 'Login'}
-                </Button>
-            </DialogActions>
-        </Dialog>
-    );
+  return (
+    <>
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>{isRegister ? 'Register' : 'Login'}</DialogTitle>
+        <form onSubmit={handleSubmit}>
+          <DialogContent>
+            <TextField
+              label="Email"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <TextField
+              label="Password"
+              type="password"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+            {isRegister && (
+              <TextField
+                label="Confirm Password"
+                type="password"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            )}
+            {isRegister && (
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={acceptedRules}
+                    onChange={(e) => setAcceptedRules(e.target.checked)}
+                    name="acceptedRules"
+                    color="primary"
+                  />
+                }
+                label={
+                  <span>
+                    I accept the{' '}
+                    <Button onClick={() => setRulesModalOpen(true)} color="primary">
+                      rules
+                    </Button>
+                  </span>
+                }
+              />
+            )}
+            {error && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {error}
+              </Alert>
+            )}
+            {info && (
+              <Alert severity="info" sx={{ mt: 2 }}>
+                {info}
+              </Alert>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="primary">
+              Cancel
+            </Button>
+            {!isRegister && (
+              <Button onClick={handlePasswordReset} color="primary" variant="outlined">
+                Forgot Password?
+              </Button>
+            )}
+            <Button type="submit" color="primary" variant="contained">
+              {isRegister ? 'Register' : 'Login'}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+      <RulesModal open={rulesModalOpen} handleClose={() => setRulesModalOpen(false)} />
+    </>
+  );
 };
 
-export default LoginRegisterDialog;
+export default AuthDialog;
