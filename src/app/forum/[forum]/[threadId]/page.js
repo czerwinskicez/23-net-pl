@@ -12,7 +12,10 @@ import CreatePost from '../../../../components/CreatePost';
 import PostsList from '../../../../components/PostsList';
 import CustomBreadcrumbs from '../../../../components/CustomBreadcrumbs';
 import ThreadHead from '../../../../components/ThreadHead';
-import ServiceWorker from '../../../../components/ServiceWorker'; // Import the ServiceWorker component
+// import ServiceWorker from '../../../../components/ServiceWorker'; // Import the ServiceWorker component
+import dynamic from 'next/dynamic';
+
+const ServiceWorker = dynamic(() => import('../../../../components/ServiceWorker'), { ssr: false });
 
 const ThreadPage = ({ params }) => {
   const { forum, threadId } = params;
