@@ -2,15 +2,16 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Container, ThemeProvider, Typography, Paper } from '@mui/material';
-import { doc, getDoc, collection, getDocs, orderBy, query } from 'firebase/firestore';
-import { db } from '../../../../firebaseConfig';
+import { Container, ThemeProvider, Typography, Snackbar } from '@mui/material';
+import { doc, getDoc, collection, getDocs, orderBy, query, deleteDoc, setDoc } from 'firebase/firestore'; // Import Firestore methods from your firebaseConfig
+import { db, auth, requestPermissionAndGetToken } from '../../../../firebaseConfig'; // Import db, auth, and FCM token handler
 import BodyBox from '../../../../components/BodyBox';
 import theme from '../../../theme';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import CreatePost from '../../../../components/CreatePost';
 import PostsList from '../../../../components/PostsList';
 import CustomBreadcrumbs from '../../../../components/CustomBreadcrumbs';
+import ThreadHead from '../../../../components/ThreadHead'; // Import the new component
 
 const ThreadPage = ({ params }) => {
   const { forum, threadId } = params;
@@ -20,6 +21,57 @@ const ThreadPage = ({ params }) => {
   const [threadData, setThreadData] = useState(null);
   const [posts, setPosts] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+
+  const handleUnsubscribe = async () => {
+    try {
+      const userId = auth.currentUser.uid;
+      const userDocRef = doc(db, `forums/${forum}/threads/${threadId}/users_to_notify/${userId}`);
+      await deleteDoc(userDocRef);
+      setIsSubscribed(false);
+      setSnackbarMessage('You have successfully unsubscribed from this thread.');
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error('Error unsubscribing from thread:', error);
+      setSnackbarMessage('Error unsubscribing from this thread.');
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleSubscribe = async () => {
+    try {
+      const userId = auth.currentUser.uid;
+      const userDocRef = doc(db, `forums/${forum}/threads/${threadId}/users_to_notify/${userId}`);
+      // await setDoc(userDocRef, { userId });
+      setIsSubscribed(true);
+      setSnackbarMessage('You have successfully subscribed to this thread.');
+      setSnackbarOpen(true);
+
+      // Request FCM token for the subscribed user
+      const fcmToken = await requestPermissionAndGetToken();
+      if (fcmToken) {
+        // console.log('FCM token for notifications:', fcmToken);
+        setDoc(userDocRef, { fcmToken });
+      }
+    } catch (error) {
+      console.error('Error subscribing to thread:', error);
+      setSnackbarMessage('Error subscribing to this thread.');
+      setSnackbarOpen(true);
+    }
+  };
+
+  const checkSubscriptionStatus = async () => {
+    try {
+      const userId = auth.currentUser.uid;
+      const userDocRef = doc(db, `forums/${forum}/threads/${threadId}/users_to_notify/${userId}`);
+      const userDoc = await getDoc(userDocRef);
+      setIsSubscribed(userDoc.exists());
+    } catch (error) {
+      console.error('Error checking subscription status:', error);
+    }
+  };
 
   const fetchForumData = async () => {
     try {
@@ -63,9 +115,23 @@ const ThreadPage = ({ params }) => {
   };
 
   useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/firebase-messaging-sw.js")
+        .then((registration) => {
+          console.log("Service Worker registered with scope:", registration.scope);
+        })
+        .catch((err) => {
+          console.error("Service Worker registration failed:", err);
+        });
+    }
+  }, []);  
+
+  useEffect(() => {
     fetchForumData();
     fetchThreadData();
     fetchPosts();
+    checkSubscriptionStatus();
   }, [forum, threadId]);
 
   return (
@@ -86,17 +152,25 @@ const ThreadPage = ({ params }) => {
                   ]}
                   current={threadData.title}
                 />
-
-                <Paper style={{ width: '95%', marginBottom: "16px", padding: "16px" }}>
-                  <Typography variant="h4">{threadData.title}</Typography>
-                  <Typography variant="body1">{threadData.description}</Typography>
-                </Paper>
+                {/* Use ThreadHead component */}
+                <ThreadHead
+                  threadData={threadData}
+                  isSubscribed={isSubscribed}
+                  handleSubscribe={handleSubscribe}
+                  handleUnsubscribe={handleUnsubscribe}
+                />
                 <PostsList forum={forum} threadId={threadId} posts={posts} fetchPosts={fetchPosts} />
                 <CreatePost forum={forum} threadId={threadId} fetchPosts={fetchPosts} />
               </>
             )
           )}
         </BodyBox>
+        <Snackbar
+          open={snackbarOpen}
+          autoHideDuration={6000}
+          onClose={() => setSnackbarOpen(false)}
+          message={snackbarMessage}
+        />
       </Container>
     </ThemeProvider>
   );
