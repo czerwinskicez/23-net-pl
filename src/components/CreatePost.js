@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Paper, Typography, Box } from '@mui/material';
+import { TextField, Button, Paper, Typography, Box, Checkbox, FormControlLabel } from '@mui/material';
 import { auth, db } from '../firebaseConfig';
-import { addDoc, collection, serverTimestamp, doc, getDoc } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp, doc, getDoc, setDoc } from 'firebase/firestore'; // Added setDoc for users_to_notify
 import SetDisplayNameModal from './SetDisplayNameModal';
 import Send from '@mui/icons-material/Send';
 import ImageUpload from './ImageUpload'; // Import the ImageUpload component
@@ -13,6 +13,7 @@ const CreatePost = ({ forum, threadId, fetchPosts }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageUrl, setImageUrl] = useState(''); // State for image URL
+  const [receiveNotifications, setReceiveNotifications] = useState(true); // State for notifications
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -44,8 +45,18 @@ const CreatePost = ({ forum, threadId, fetchPosts }) => {
         description: newPostContent,
         imageUrl: imageUrl, // Include image URL in the post
         createdAt: serverTimestamp(),
+        receiveNotifications: receiveNotifications, // Include notification preference
       };
       await addDoc(collection(db, `forums/${forum}/threads/${threadId}/posts`), newPost);
+
+      // If user wants to receive notifications, add user ID to the users_to_notify collection
+      if (receiveNotifications) {
+        await setDoc(
+          doc(db, `forums/${forum}/threads/${threadId}/users_to_notify`, auth.currentUser.uid),
+          { uid: auth.currentUser.uid }
+        );
+      }
+
       window.location.reload(); // Refresh the page immediately after adding the post
     } catch (error) {
       setErrorMessage('Error adding post.');
@@ -94,6 +105,16 @@ const CreatePost = ({ forum, threadId, fetchPosts }) => {
             <Typography variant="body2">{getFileNameFromUrl(imageUrl)}</Typography>
           </Box>
         )}
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={receiveNotifications}
+              onChange={(e) => setReceiveNotifications(e.target.checked)}
+            />
+          }
+          label="I want to receive notifications from this thread"
+          style={{ marginBottom: '16px' }}
+        />
         <Box display="flex" justifyContent="flex-end" alignItems="center" gap={2}>
           <ImageUpload onUploadSuccess={(url) => setImageUrl(url)} /> {/* Include ImageUpload component */}
           <Button
