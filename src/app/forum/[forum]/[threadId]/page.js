@@ -12,6 +12,7 @@ import CreatePost from '../../../../components/CreatePost';
 import PostsList from '../../../../components/PostsList';
 import CustomBreadcrumbs from '../../../../components/CustomBreadcrumbs';
 import ThreadHead from '../../../../components/ThreadHead';
+import ServiceWorker from '../../../../components/ServiceWorker'; // Import the ServiceWorker component
 
 const ThreadPage = ({ params }) => {
   const { forum, threadId } = params;
@@ -113,19 +114,6 @@ const ThreadPage = ({ params }) => {
   };
 
   useEffect(() => {
-    if (typeof window != 'undefined' && 'serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register("/firebase-messaging-sw.js")
-        .then((registration) => {
-          console.log("Service Worker registered with scope:", registration.scope);
-        })
-        .catch((err) => {
-          console.error("Service Worker registration failed:", err);
-        });
-    }
-  }, []);
-
-  useEffect(() => {
     fetchForumData();
     fetchThreadData();
     fetchPosts();
@@ -144,7 +132,7 @@ const ThreadPage = ({ params }) => {
             forumData && threadData && (
               <>
                 <CustomBreadcrumbs
-                  links={[
+                  links={[ 
                     { label: 'Start', href: '/start' },
                     { label: forumData.name, href: `/forum/${forum}` }
                   ]}
@@ -162,12 +150,16 @@ const ThreadPage = ({ params }) => {
             )
           )}
         </BodyBox>
+        
+        {/* Snackbar for notifications */}
         <Snackbar
           open={snackbarOpen}
           autoHideDuration={6000}
           onClose={() => setSnackbarOpen(false)}
           message={snackbarMessage}
         />
+        
+        <ServiceWorker /> {/* Include the ServiceWorker component here */}
       </Container>
     </ThemeProvider>
   );
