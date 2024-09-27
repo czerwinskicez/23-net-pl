@@ -44,7 +44,7 @@ const PostsList = ({ forum, threadId, posts, fetchPosts }) => {
 
   const handleCopyLink = (postId) => {
     const postUrl = `${window.location.origin}/forum/${forum}/${threadId}#${postId}`;
-    if(typeof window != 'undefined') navigator.clipboard.writeText(postUrl).then(() => {
+    navigator.clipboard.writeText(postUrl).then(() => {
       setSnackbarOpen(true);
     });
   };
