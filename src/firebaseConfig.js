@@ -1,6 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithRedirect, signInWithPopup, getRedirectResult, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
-import { getFirestore, doc, getDoc, getDocs, updateDoc, serverTimestamp, collection, writeBatch } from 'firebase/firestore'; // Import Firestore
+import { getFirestore, doc, getDoc, getDocs, updateDoc, serverTimestamp, collection, writeBatch, deleteDoc } from 'firebase/firestore'; // Import Firestore
 import { getStorage } from 'firebase/storage';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging'; // Import Firebase Messaging
 
@@ -52,4 +52,4 @@ onMessage(messaging, (payload) => {
   console.log('Message received. ', payload);
 });
 
-export { getFirestore, storage, updateDoc, serverTimestamp, collection, writeBatch, doc, getDoc, getDocs, auth, provider, signInWithRedirect, signInWithPopup, sendPasswordResetEmail, getRedirectResult, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, db, messaging, requestPermissionAndGetToken };
+export { getFirestore, deleteDoc, storage, updateDoc, serverTimestamp, collection, writeBatch, doc, getDoc, getDocs, auth, provider, signInWithRedirect, signInWithPopup, sendPasswordResetEmail, getRedirectResult, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, db, messaging, requestPermissionAndGetToken };

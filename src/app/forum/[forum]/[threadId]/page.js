@@ -3,15 +3,15 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Container, ThemeProvider, Typography, Snackbar } from '@mui/material';
-import { doc, getDoc, collection, getDocs, orderBy, query, deleteDoc, setDoc } from 'firebase/firestore'; // Import Firestore methods from your firebaseConfig
-import { db, auth, requestPermissionAndGetToken } from '../../../../firebaseConfig'; // Import db, auth, and FCM token handler
+import { doc, getDoc, collection, getDocs, orderBy, query, deleteDoc, setDoc } from 'firebase/firestore';
+import { db, auth, requestPermissionAndGetToken } from '../../../../firebaseConfig'; 
 import BodyBox from '../../../../components/BodyBox';
 import theme from '../../../theme';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import CreatePost from '../../../../components/CreatePost';
 import PostsList from '../../../../components/PostsList';
 import CustomBreadcrumbs from '../../../../components/CustomBreadcrumbs';
-import ThreadHead from '../../../../components/ThreadHead'; // Import the new component
+import ThreadHead from '../../../../components/ThreadHead';
 
 const ThreadPage = ({ params }) => {
   const { forum, threadId } = params;
@@ -44,7 +44,6 @@ const ThreadPage = ({ params }) => {
     try {
       const userId = auth.currentUser.uid;
       const userDocRef = doc(db, `forums/${forum}/threads/${threadId}/users_to_notify/${userId}`);
-      // await setDoc(userDocRef, { userId });
       setIsSubscribed(true);
       setSnackbarMessage('You have successfully subscribed to this thread.');
       setSnackbarOpen(true);
@@ -52,7 +51,6 @@ const ThreadPage = ({ params }) => {
       // Request FCM token for the subscribed user
       const fcmToken = await requestPermissionAndGetToken();
       if (fcmToken) {
-        // console.log('FCM token for notifications:', fcmToken);
         setDoc(userDocRef, { fcmToken });
       }
     } catch (error) {
@@ -115,7 +113,7 @@ const ThreadPage = ({ params }) => {
   };
 
   useEffect(() => {
-    if ("serviceWorker" in navigator) {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       navigator.serviceWorker
         .register("/firebase-messaging-sw.js")
         .then((registration) => {
@@ -125,7 +123,7 @@ const ThreadPage = ({ params }) => {
           console.error("Service Worker registration failed:", err);
         });
     }
-  }, []);  
+  }, []);
 
   useEffect(() => {
     fetchForumData();
@@ -152,7 +150,6 @@ const ThreadPage = ({ params }) => {
                   ]}
                   current={threadData.title}
                 />
-                {/* Use ThreadHead component */}
                 <ThreadHead
                   threadData={threadData}
                   isSubscribed={isSubscribed}
