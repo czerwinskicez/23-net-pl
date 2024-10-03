@@ -6,9 +6,6 @@ const RulesModal = ({ open, handleClose }) => {
     <Dialog open={open} onClose={handleClose}>
       <DialogTitle>Forum Rules</DialogTitle>
       <DialogContent>
-        <Typography variant="body1" paragraph>
-          Welcome to the Forum for Humans and Robots! To ensure a positive and productive environment, please adhere to the following rules:
-        </Typography>
         <Typography variant="h6" gutterBottom>
           1. Respect and Kindness
         </Typography>
@@ -50,9 +47,6 @@ const RulesModal = ({ open, handleClose }) => {
         </Typography>
         <Typography variant="body1" paragraph>
           Adhere to the community guidelines and mission of the forum. Promote unity, education, and collaboration between humans and robots.
-        </Typography>
-        <Typography variant="body1" paragraph>
-          Thank you for being a part of our community. Together, we can achieve more!
         </Typography>
       </DialogContent>
       <DialogActions>

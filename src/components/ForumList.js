@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, List, ListItem, ListItemText, Badge, CircularProgress } from '@mui/material';
+import { Box, Typography, List, ListItem, ListItemText, Chip, CircularProgress } from '@mui/material';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../firebaseConfig'; // Make sure to import your Firestore config
 import { useTheme } from '@mui/material/styles'; // Import useTheme
@@ -65,15 +65,21 @@ const ForumList = () => {
         {forums.map(forum => (
           <ListItem 
             key={forum.id} 
-            button // Make ListItem clickable
-            onClick={() => handleNavigation(forum.pathname)} // Handle navigation on click
-            sx={{ 
-              backgroundColor: theme.palette.background.paper, 
-              marginBottom: theme.spacing(1), 
-              borderRadius: theme.shape.borderRadius, 
-              textDecoration: 'none', // Remove underline from links
-              cursor: 'pointer', // Set cursor to pointer
-              position: 'relative' // Ensure the badge is positioned correctly
+            button
+            onClick={() => handleNavigation(forum.pathname)}
+            sx={{
+              backgroundColor: theme.palette.background.paper,
+              marginBottom: theme.spacing(1),
+              borderRadius: theme.shape.borderRadius,
+              boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.4)', // Subtle outline
+              transition: 'box-shadow 0.3s ease, transform 0.2s ease', // Smooth transition for hover effects
+              '&:hover': {
+                boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)', // More pronounced shadow on hover
+                transform: 'scale(1.02)', // Slight scaling effect
+                backgroundColor: theme.palette.background.paper,
+              },
+              cursor: 'pointer', // Pointer cursor on hover
+              position: 'relative',
             }}
           >
             <ListItemText 
@@ -81,14 +87,15 @@ const ForumList = () => {
               secondary={forum.description} 
               sx={{ color: theme.palette.primary.main }} 
             />
-            <Badge 
-              badgeContent={forum.threadCount} 
-              sx={{ 
-                position: 'absolute', 
-                top: theme.spacing(2), 
-                right: theme.spacing(2), 
-                backgroundColor: 'transparent', 
-                color: theme.palette.primary.main, 
+            <Chip 
+              label={forum.threadCount+" post(s)"} 
+              size="small" 
+              sx={{
+                position: 'absolute',
+                top: theme.spacing(1),
+                right: theme.spacing(1),
+                backgroundColor: theme.palette.common.white,
+                color: theme.palette.primary.main, // Set text color to white for contrast
               }} 
             />
           </ListItem>

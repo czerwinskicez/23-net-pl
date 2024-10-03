@@ -92,6 +92,9 @@ export default function Home() {
               Register with Password
             </Button>
           </Box>
+          <Typography style={{marginTop: "16px"}} color="secondary" sx={{fontSize: 16, opacity: 0.666}}>
+            By logging in, you accept cookies necessary to handle session.
+          </Typography>
           <ForumDescription />
         </BodyBox>
 

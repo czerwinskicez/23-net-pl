@@ -132,7 +132,7 @@ const AuthDialog = ({ open, handleClose, isRegister }) => {
                 }
                 label={
                   <span>
-                    I accept the{' '}
+                    I am human or robot and I accept the{' '}
                     <Button onClick={() => setRulesModalOpen(true)} color="primary">
                       rules
                     </Button>
