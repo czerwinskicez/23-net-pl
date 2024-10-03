@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, Alert, CircularProgress, Box } from '@mui/material';
+import { Container, Typography, Alert, CircularProgress, Box, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useRouter } from 'next/navigation';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { db } from '../../firebaseConfig';
@@ -11,6 +12,7 @@ import theme from '../theme';
 import BodyBox from '../../components/BodyBox';
 import ForumsOrderAdmin from '../../components/ForumsOrderAdmin';
 import CreateForumAdmin from '../../components/CreateForumAdmin';
+// import ReportsAdmin from '../../components/ReportsAdmin';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 
 const AdminPage = () => {
@@ -96,18 +98,43 @@ const AdminPage = () => {
                   {alertMessage}
                 </Alert>
               )}
-              <CreateForumAdmin 
-                forums={forums} 
-                onForumAdded={fetchForums} 
-                setAlertMessage={setAlertMessage} 
-                setAlertSeverity={setAlertSeverity} 
-              />
-              <ForumsOrderAdmin 
-                forums={forums} 
-                onFetchForums={fetchForums} 
-                setAlertMessage={setAlertMessage} 
-                setAlertSeverity={setAlertSeverity} 
-              />
+
+              <Box sx={{ width: "95%", marginBottom: "10px" }}>
+                <Accordion>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Typography>Create New Forum</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <CreateForumAdmin
+                      forums={forums}
+                      onForumAdded={fetchForums}
+                      setAlertMessage={setAlertMessage}
+                      setAlertSeverity={setAlertSeverity}
+                    />
+                  </AccordionDetails>
+                </Accordion>
+                <Accordion>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Typography>Manage Forum Order</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <ForumsOrderAdmin
+                      forums={forums}
+                      onFetchForums={fetchForums}
+                      setAlertMessage={setAlertMessage}
+                      setAlertSeverity={setAlertSeverity}
+                    />
+                  </AccordionDetails>
+                </Accordion>
+                {/* <Accordion>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                    <Typography>Reported posts</Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <ReportsAdmin/>
+                  </AccordionDetails>
+                </Accordion> */}
+              </Box>
             </>
           ) : (
             <Typography variant="h6">Access Denied</Typography>

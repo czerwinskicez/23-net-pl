@@ -16,7 +16,7 @@ const ForumsOrderAdmin = ({ setAlertMessage, setAlertSeverity }) => {
       const forumsCollection = collection(db, 'forums');
       const forumsSnapshot = await getDocs(forumsCollection);
       const forumsList = forumsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      forumsList.sort((a, b)=> a.orderIdx - b.orderIdx);
+      forumsList.sort((a, b) => a.orderIdx - b.orderIdx);
       setForums(forumsList);
     } catch (err) {
       setError('Failed to fetch forums.');
@@ -72,7 +72,7 @@ const ForumsOrderAdmin = ({ setAlertMessage, setAlertSeverity }) => {
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="forums">
           {(provided) => (
-            <List {...provided.droppableProps} ref={provided.innerRef} sx={{ width: '95%' }}>
+            <List {...provided.droppableProps} ref={provided.innerRef}>
               {forums.map((forum, index) => (
                 <Draggable key={forum.id} draggableId={forum.id} index={index}>
                   {(provided) => (
@@ -80,7 +80,17 @@ const ForumsOrderAdmin = ({ setAlertMessage, setAlertSeverity }) => {
                       ref={provided.innerRef}
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
-                      sx={{ backgroundColor: theme.palette.background.paper, marginBottom: theme.spacing(1), borderRadius: theme.shape.borderRadius }}
+                      sx={{
+                        backgroundColor: theme.palette.background.paper,
+                        marginBottom: theme.spacing(1),
+                        borderRadius: theme.shape.borderRadius,
+                        boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.4)', // Subtle outline
+                        transition: 'box-shadow 0.3s ease, transform 0.2s ease', // Smooth transition for hover effects
+                        '&:hover': {
+                          boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)', // More pronounced shadow on hover
+                          transform: 'scale(1.02)', // Slight scaling effect
+                        },
+                      }}
                     >
                       <ListItemText primary={forum.name} secondary={forum.description} sx={{ color: theme.palette.primary.main }} />
                       <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteForum(forum.id)}>
