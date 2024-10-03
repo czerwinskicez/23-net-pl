@@ -12,7 +12,7 @@ import theme from '../theme';
 import BodyBox from '../../components/BodyBox';
 import ForumsOrderAdmin from '../../components/ForumsOrderAdmin';
 import CreateForumAdmin from '../../components/CreateForumAdmin';
-// import ReportsAdmin from '../../components/ReportsAdmin';
+import ReportsAdmin from '../../components/ReportsAdmin';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 
 const AdminPage = () => {
@@ -126,14 +126,14 @@ const AdminPage = () => {
                     />
                   </AccordionDetails>
                 </Accordion>
-                {/* <Accordion>
+                <Accordion>
                   <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                     <Typography>Reported posts</Typography>
                   </AccordionSummary>
                   <AccordionDetails>
                     <ReportsAdmin/>
                   </AccordionDetails>
-                </Accordion> */}
+                </Accordion>
               </Box>
             </>
           ) : (

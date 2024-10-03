@@ -1,96 +1,158 @@
-import React, { useEffect, useState } from 'react';
-import { Accordion, AccordionSummary, AccordionDetails, Typography, List, ListItem, ListItemText, CircularProgress, Box } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { collection, getDocs, doc, getDoc, query, where } from 'firebase/firestore';
+import React, { useState, useEffect } from 'react';
+import { Typography, CircularProgress, Divider, Button, Chip, Box, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { collection, getDocs, doc, setDoc, deleteDoc, getDoc, Timestamp } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
-import theme from '../app/theme';
+import ArchiveIcon from '@mui/icons-material/Archive';
 
 const ReportsAdmin = () => {
-  const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [groupedReports, setGroupedReports] = useState({});
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [userModalOpen, setUserModalOpen] = useState(false);
 
   useEffect(() => {
-    const fetchReports = async () => {
+    const fetchReportedPosts = async () => {
       try {
-        // Fetch reported posts where archived is null or doesn't exist
-        const reportsQuery = query(collection(db, 'reported_posts'), where('archived', '==', null));
-        const reportsSnapshot = await getDocs(reportsQuery);
+        const reportsCollection = collection(db, 'reported_posts');
+        const reportsSnapshot = await getDocs(reportsCollection);
+        const reportsList = reportsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        const reportData = await Promise.all(reportsSnapshot.docs.map(async (reportDoc) => {
-          const report = reportDoc.data();
-
-          // Combine forumId, threadId retrieval logic from previous code
-          const postPathParts = reportDoc.ref.path.split('/'); // Split path into segments
-          const forumId = postPathParts[1]; // Extract forumId from path
-          const threadId = postPathParts[3]; // Extract threadId from path
-
-          // Existing logic for fetching post details
-          const postDocRef = doc(db, `forums/${report.forumId}/threads/${report.threadId}/posts/${report.postId}`);
-          const postDoc = await getDoc(postDocRef);
-
-          if (!postDoc.exists()) {
-            return null; // Post might have been deleted
+        // Grouping reports by postId
+        const grouped = reportsList.reduce((acc, report) => {
+          const { postId } = report;
+          if (!acc[postId]) {
+            acc[postId] = [];
           }
+          acc[postId].push(report);
+          return acc;
+        }, {});
 
-          const postData = postDoc.data();
-          const userDocRef = doc(db, `users/${report.reportedBy}`);
-          const userDoc = await getDoc(userDocRef);
-          const userData = userDoc.exists() ? userDoc.data() : { displayName: null, email: 'Unknown' };
-
-          return {
-            ...report,
-            postDescription: postData.description,
-            imageUrl: postData.imageUrl || null,
-            userName: userData.displayName || 'Anonymous',
-            userEmail: userData.email || 'No Email',
-            forumId: forumId, // Add forumId from post path
-            threadId: threadId, // Add threadId from post path
-            reportedAt: report.reportedAt.toDate().toLocaleDateString(),
-          };
-        }));
-
-        setReports(reportData.filter(Boolean)); // Filter out any null results
+        setGroupedReports(grouped);
         setLoading(false);
-      } catch (err) {
-        console.error('Error fetching reports:', err);
-        setError('Failed to fetch reports.');
+      } catch (error) {
+        console.error('Error fetching reported posts:', error);
         setLoading(false);
       }
     };
 
-    fetchReports();
+    fetchReportedPosts();
   }, []);
 
+  const archiveReports = async (postId, reports) => {
+    try {
+      // Prepare the archive data
+      const archiveData = {
+        archivedDate: Timestamp.now(),
+        reports: reports.map(report => ({
+          reportId: report.id,
+          reportedBy: report.reportedBy,
+          reportedAt: report.reportedAt
+        }))
+      };
+
+      // Create a new document in the reported_posts_archive collection
+      const archiveRef = doc(collection(db, 'reported_posts_archive'));
+      await setDoc(archiveRef, archiveData);
+
+      // Delete all reports from reported_posts
+      const deletePromises = reports.map(report => {
+        const reportRef = doc(db, 'reported_posts', report.id);
+        return deleteDoc(reportRef);
+      });
+      await Promise.all(deletePromises);
+
+      // Update local state to remove the archived reports
+      setGroupedReports(prevGroupedReports => {
+        const updatedReports = { ...prevGroupedReports };
+        delete updatedReports[postId];
+        return updatedReports;
+      });
+    } catch (error) {
+      console.error('Error archiving reports:', error);
+    }
+  };
+
+  const fetchUserDetails = async (userId) => {
+    try {
+      const userDocRef = doc(db, 'users', userId);
+      const userDoc = await getDoc(userDocRef);
+      if (userDoc.exists()) {
+        setSelectedUser(userDoc.data());
+        setUserModalOpen(true);
+      } else {
+        console.error('User not found');
+      }
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+    }
+  };
+
+  const closeModal = () => {
+    setUserModalOpen(false);
+    setSelectedUser(null);
+  };
+
+  if (loading) {
+    return <CircularProgress />;
+  }
+
   return (
-    <Accordion>
-      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <Typography>View Reported Posts</Typography>
-      </AccordionSummary>
-      <AccordionDetails>
-        {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <CircularProgress />
+    <>
+      {Object.entries(groupedReports).map(([postId, reports]) => (
+        <div key={postId} style={{ textAlign: 'left', marginBottom: '2em' }}>
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="h6" gutterBottom>
+              {postId}
+            </Typography>
+            <Chip
+              label={`${reports.length} report(s)`}
+              variant="outlined"
+              color="secondary"
+            />
           </Box>
-        ) : error ? (
-          <Typography color="error">{error}</Typography>
-        ) : (
-          <List>
-            {reports.map((report, index) => (
-              <ListItem key={index} sx={{ backgroundColor: theme.palette.background.paper, marginBottom: theme.spacing(1), borderRadius: theme.shape.borderRadius, padding: theme.spacing(2) }}>
-                <ListItemText
-                  primary={`Post in Forum: ${report.forumId}, Thread: ${report.threadId}`}
-                  secondary={`Post Description: ${report.postDescription}\nReported At: ${report.reportedAt}\nReported By: ${report.userName} (${report.userEmail})`}
-                />
-                {report.imageUrl && (
-                  <img src={report.imageUrl} alt="Post Image" style={{ width: '100px', height: 'auto' }} />
-                )}
-              </ListItem>
-            ))}
-          </List>
-        )}
-      </AccordionDetails>
-    </Accordion>
+
+          {reports.map((report, index) => (
+            <div key={report.id} style={{ marginBottom: '1em' }}>
+              <Typography>
+                By: <Button onClick={() => fetchUserDetails(report.reportedBy)}>{report.reportedBy}</Button>
+                Date: {new Date(report.reportedAt.seconds * 1000).toLocaleString()}
+              </Typography>
+            </div>
+          ))}
+
+          <Box justifyContent="right" display="flex">
+            <Button
+              variant="contained"
+              color="secondary"
+              startIcon={<ArchiveIcon />}
+              onClick={() => archiveReports(postId, reports)}
+              sx={{ marginTop: '1em' }}
+            >
+              Archive
+            </Button>
+          </Box>
+
+          <Divider sx={{ marginY: '2em' }} />
+        </div>
+      ))}
+
+      <Dialog open={userModalOpen} onClose={closeModal}>
+        <DialogTitle>User Details</DialogTitle>
+        <DialogContent>
+          {selectedUser ? (
+            <>
+              <Typography>Email: {selectedUser.email}</Typography>
+              <Typography>Display Name: {selectedUser.displayName || 'N/A'}</Typography>
+            </>
+          ) : (
+            <Typography>No user details available</Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeModal} color="primary">Close</Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 
