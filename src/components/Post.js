@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Card, CardContent, Typography, Box, Divider, Snackbar, Alert, Avatar } from '@mui/material';
-import { doc, deleteDoc, getDoc } from 'firebase/firestore';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, Typography, Box, Divider, Snackbar, Alert, Avatar, IconButton } from '@mui/material';
+import { ThumbUpAlt, ThumbUpOffAlt, ThumbDownAlt, ThumbDownOffAlt } from '@mui/icons-material';
+import { doc, deleteDoc, getDoc, getDocs, collection, setDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { db } from '../firebaseConfig';
 import PostMenu from './PostMenu';
@@ -11,6 +12,12 @@ const Post = ({ post, forum, threadId, isAdmin, fetchPosts, userNames, handleCop
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [likes, setLikes] = useState(0);
+  const [dislikes, setDislikes] = useState(0);
+  const [userReaction, setUserReaction] = useState(null); // "like", "dislike", or null
+
+  const auth = getAuth();
+  const user = auth.currentUser;
 
   const handleSnackbarClose = () => {
     setSnackbarOpen(false);
@@ -25,9 +32,6 @@ const Post = ({ post, forum, threadId, isAdmin, fetchPosts, userNames, handleCop
   };
 
   const handleDeletePost = async (postId) => {
-    const auth = getAuth();
-    const user = auth.currentUser;
-
     if (user) {
       const userDoc = await getDoc(doc(db, 'public_users', user.uid));
       if (userDoc.exists() && userDoc.data().admin) {
@@ -54,10 +58,78 @@ const Post = ({ post, forum, threadId, isAdmin, fetchPosts, userNames, handleCop
     setSnackbarOpen(true);
   };
 
+  // Fetch likes, dislikes, and user reaction
+  const fetchReactions = async () => {
+    const likesSnapshot = await getDocs(collection(db, `forums/${forum}/threads/${threadId}/posts/${post.id}/likes`));
+    const dislikesSnapshot = await getDocs(collection(db, `forums/${forum}/threads/${threadId}/posts/${post.id}/dislikes`));
+
+    setLikes(likesSnapshot.size);
+    setDislikes(dislikesSnapshot.size);
+
+    if (user) {
+      const userLikeDoc = await getDoc(doc(db, `forums/${forum}/threads/${threadId}/posts/${post.id}/likes/${user.uid}`));
+      const userDislikeDoc = await getDoc(doc(db, `forums/${forum}/threads/${threadId}/posts/${post.id}/dislikes/${user.uid}`));
+
+      if (userLikeDoc.exists()) {
+        setUserReaction('like');
+      } else if (userDislikeDoc.exists()) {
+        setUserReaction('dislike');
+      } else {
+        setUserReaction(null);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchReactions();
+  }, []);
+
+  const handleLike = async () => {
+    if (user) {
+      if (userReaction === 'like') {
+        // Remove like
+        await deleteDoc(doc(db, `forums/${forum}/threads/${threadId}/posts/${post.id}/likes/${user.uid}`));
+        setUserReaction(null);
+        setLikes(likes - 1);
+      } else {
+        // Add like and remove dislike if exists
+        await setDoc(doc(db, `forums/${forum}/threads/${threadId}/posts/${post.id}/likes/${user.uid}`), {});
+        if (userReaction === 'dislike') {
+          await deleteDoc(doc(db, `forums/${forum}/threads/${threadId}/posts/${post.id}/dislikes/${user.uid}`));
+          setDislikes(dislikes - 1);
+        }
+        setUserReaction('like');
+        setLikes(likes + 1);
+      }
+    }
+  };
+
+  const handleDislike = async () => {
+    if (user) {
+      if (userReaction === 'dislike') {
+        // Remove dislike
+        await deleteDoc(doc(db, `forums/${forum}/threads/${threadId}/posts/${post.id}/dislikes/${user.uid}`));
+        setUserReaction(null);
+        setDislikes(dislikes - 1);
+      } else {
+        // Add dislike and remove like if exists
+        await setDoc(doc(db, `forums/${forum}/threads/${threadId}/posts/${post.id}/dislikes/${user.uid}`), {});
+        if (userReaction === 'like') {
+          await deleteDoc(doc(db, `forums/${forum}/threads/${threadId}/posts/${post.id}/likes/${user.uid}`));
+          setLikes(likes - 1);
+        }
+        setUserReaction('dislike');
+        setDislikes(dislikes + 1);
+      }
+    }
+  };
+
   return (
     <>
       <Card id={post.id} sx={{ marginBottom: 2, position: 'relative' }}>
-        <CardContent>
+        <CardContent sx={{ "&:last-child": {
+          paddingBottom: "12px"
+        }}}>
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Avatar
@@ -96,9 +168,23 @@ const Post = ({ post, forum, threadId, isAdmin, fetchPosts, userNames, handleCop
               />
             </Box>
           )}
+          {/* Like/Dislike buttons */}
+          <Box sx={{ display: 'flex', alignItems: 'center', marginTop: 2 }}>
+            <IconButton onClick={handleLike}>
+              {userReaction === 'like' ? <ThumbUpAlt /> : <ThumbUpOffAlt />}
+            </IconButton>
+            <Typography variant="body2" sx={{ marginRight: 2 }}>
+              {likes}
+            </Typography>
+            <IconButton onClick={handleDislike}>
+              {userReaction === 'dislike' ? <ThumbDownAlt /> : <ThumbDownOffAlt />}
+            </IconButton>
+            <Typography variant="body2">
+              {dislikes}
+            </Typography>
+          </Box>
         </CardContent>
       </Card>
-      <Divider />
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
