@@ -88,7 +88,7 @@ const ForumList = () => {
               sx={{ color: theme.palette.primary.main }} 
             />
             <Chip 
-              label={forum.threadCount+" post(s)"} 
+              label={forum.threadCount+" thread(s)"} 
               size="small" 
               sx={{
                 position: 'absolute',
