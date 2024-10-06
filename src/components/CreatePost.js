@@ -80,7 +80,7 @@ const CreatePost = ({ forum, threadId, fetchPosts }) => {
         <TextField
           label="New Post"
           multiline
-          rows={4}
+          minRows={3}
           variant="outlined"
           fullWidth
           value={newPostContent}
