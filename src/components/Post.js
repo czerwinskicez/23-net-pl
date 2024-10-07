@@ -124,6 +124,28 @@ const Post = ({ post, forum, threadId, isAdmin, fetchPosts, userNames, handleCop
     }
   };
 
+  const renderPost = (description) => {
+    return description.split('\n').map((line, index) => {
+      const isQuote = line.startsWith('>');
+      const trimmedLine = line.trim();
+      
+      return (
+        <Typography
+          key={index}
+          variant="body1"
+          component="span"
+          sx={{
+            display: 'block',
+            color: isQuote ? (theme) => theme.palette.quotation.main : 'inherit',
+            fontStyle: "italic",
+          }}
+        >
+          {trimmedLine.length === 0 ? '\u00A0' : line}
+        </Typography>
+      );
+    });
+  };
+
   return (
     <>
       <Card id={post.id} sx={{ marginBottom: 2, position: 'relative' }}>
@@ -156,7 +178,7 @@ const Post = ({ post, forum, threadId, isAdmin, fetchPosts, userNames, handleCop
             component="pre"
             sx={{ textAlign: 'left', marginTop: 2, whiteSpace: 'pre-wrap' }}
           >
-            {post.description}
+            {renderPost(post.description)}
           </Typography>
           {post.imageUrl && (
             <Box sx={{ textAlign: 'left', marginTop: 2 }}>

@@ -9,6 +9,9 @@ const theme = createTheme({
     secondary: {
       main: '#232323',
     },
+    quotation: {
+      main: '#d3768d',
+    },
     background: {
       default: '#edd',
       dark: '#2f3943', // Added secondary background color
