@@ -137,7 +137,7 @@ const Post = ({ post, forum, threadId, isAdmin, fetchPosts, userNames, handleCop
           sx={{
             display: 'block',
             color: isQuote ? (theme) => theme.palette.quotation.main : 'inherit',
-            fontStyle: "italic",
+            fontStyle: isQuote ? "italic":"initial",
           }}
         >
           {trimmedLine.length === 0 ? '\u00A0' : line}
