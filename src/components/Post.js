@@ -176,7 +176,7 @@ const Post = ({ post, forum, threadId, isAdmin, fetchPosts, userNames, handleCop
           <Typography
             variant="body1"
             component="pre"
-            sx={{ textAlign: 'left', marginTop: 2, whiteSpace: 'pre-wrap' }}
+            sx={{ textAlign: 'left', marginTop: 2, whiteSpace: 'pre-wrap', wordWrap: "break-word" }}
           >
             {renderPost(post.description)}
           </Typography>
